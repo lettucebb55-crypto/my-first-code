@@ -1,0 +1,17 @@
+/* 全局自定义样式 */
+
+/* 确保页脚始终在底部 (已在 base.html 中使用 d-flex 实现) */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* 首页轮播图优化 */
+.carousel-item img {
+    object-fit: cover;
+}
+
+/* 景点详情页的预订卡片 */
+.sticky-top {
+    /* 增加一个偏移量，避免紧贴导航栏 */
+    top: 20px;
+}

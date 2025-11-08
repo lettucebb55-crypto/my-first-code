@@ -1,0 +1,141 @@
+{% extends 'common/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- 1. 头部 -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <h1>保定历史文化2日游 (古莲花池+总督署)</h1>
+            <p class="text-muted">
+                <span class="badge bg-success-light text-success-dark me-2">历史文化</span>
+                <span class="badge bg-info-light text-info-dark me-2">2日游</span>
+            </p>
+        </div>
+        <div class="col-lg-4 text-lg-end">
+             <button class="btn btn-outline-danger" id="favoriteButton">
+                <i class="far fa-heart"></i> 收藏
+            </button>
+        </div>
+    </div>
+
+    <div class="row g-5">
+        <!-- 2. 左侧：图文 + 详情 -->
+        <div class="col-lg-8">
+            <!-- 封面图 -->
+            <section class="mb-4">
+                <img src="https://placehold.co/800x400/2ECC71/FFFFFF?text=保定2日游" class="img-fluid rounded shadow-sm" alt="路线封面">
+            </section>
+
+            <!-- Tab 导航 (行程安排, 费用, 须知) -->
+            <section>
+                 <ul class="nav nav-tabs" id="routeTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="itinerary-tab" data-bs-toggle="tab" data-bs-target="#itinerary" type="button">每日行程</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="cost-tab" data-bs-toggle="tab" data-bs-target="#cost" type="button">费用说明</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="notes-tab" data-bs-toggle="tab" data-bs-target="#notes" type="button">预订须知</button>
+                    </li>
+                 </ul>
+
+                 <div class="tab-content p-3 border border-top-0 rounded-bottom">
+                    <!-- 每日行程 -->
+                    <div class="tab-pane fade show active" id="itinerary" role="tabpanel">
+                        <div class="accordion" id="itineraryAccordion">
+                            <!-- Day 1 -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="day1-heading">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#day1-collapse" aria-expanded="true">
+                                        Day 1: 古莲花池 -> 直隶总督署
+                                    </button>
+                                </h2>
+                                <div id="day1-collapse" class="accordion-collapse collapse show" data-bs-parent="#itineraryAccordion">
+                                    <div class="accordion-body">
+                                        <p><strong>上午：</strong>游览古莲花池...</p>
+                                        <p><strong>下午：</strong>参观直隶总督署...</p>
+                                        <p><strong>住宿：</strong>保定市区酒店</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Day 2 -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="day2-heading">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#day2-collapse">
+                                        Day 2: 满城汉墓
+                                    </button>
+                                </h2>
+                                <div id="day2-collapse" class="accordion-collapse collapse" data-bs-parent="#itineraryAccordion">
+                                    <div class="accordion-body">
+                                        <p><strong>上午：</strong>前往满城汉墓...</p>
+                                        <p><strong>下午：</strong>行程结束，返回。</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 费用说明 -->
+                    <div class="tab-pane fade" id="cost" role="tabpanel">
+                        <h5>费用包含</h5>
+                        <ul>
+                            <li>交通：往返空调大巴</li>
+                            <li>住宿：1晚市区酒店</li>
+                            <li>门票：所列景点首道门票</li>
+                        </ul>
+                        <h5>费用不含</h5>
+                        <ul>
+                            <li>餐饮：全程正餐自理</li>
+                            <li>个人消费</li>
+                        </ul>
+                    </div>
+
+                    <!-- 预订须知 -->
+                    <div class="tab-pane fade" id="notes" role="tabpanel">
+                        <p>1. 请提前3天报名。</p>
+                        <p>2. 本路线10人成团，如未成团将提前1天通知。</p>
+                    </div>
+                 </div>
+            </section>
+        </div>
+
+        <!-- 3. 右侧：预订区 (同景点详情页) -->
+        <div class="col-lg-4">
+            <div class="card sticky-top shadow" style="top: 20px;">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">路线报名</h4>
+                </div>
+                <div class="card-body">
+                    <h5 class="text-danger display-6">¥500.00 <span class="fs-6 text-muted">/人</span></h5>
+                    <ul class="list-unstyled text-muted">
+                        <li><i class="fas fa-check-circle text-success me-2"></i> 10人成团</li>
+                        <li><i class="fas fa-calendar-alt text-success me-2"></i> 需提前3天报名</li>
+                    </ul>
+                    <hr>
+                    <form id="bookingForm" action="{% url 'orders:confirm' %}" method="GET">
+                        <div class="mb-3">
+                            <label for="bookingDate" class="form-label fw-bold">选择出行日期</label>
+                            <input type="date" class="form-control" id="bookingDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="bookingCount" class="form-label fw-bold">参与人数</label>
+                            <input type="number" class="form-control" id="bookingCount" value="1" min="1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="contactName" class="form-label fw-bold">联系人姓名</label>
+                            <input type="text" class="form-control" id="contactName" placeholder="请输入姓名" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="contactPhone" class="form-label fw-bold">联系人手机</label>
+                            <input type="tel" class="form-control" id="contactPhone" placeholder="请输入11位手机号" required>
+                        </div>
+                        <button type="submit" class="btn btn-danger btn-lg w-100">立即报名</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

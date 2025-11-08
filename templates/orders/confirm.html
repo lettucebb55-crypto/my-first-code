@@ -1,0 +1,60 @@
+{% extends 'common/base.html' %}
+{% load static %}
+
+{% block title %}订单确认 - 保定旅游网{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-header bg-primary text-white text-center rounded-top-lg">
+                    <h3 class="mb-0">确认订单信息</h3>
+                </div>
+                <div class="card-body p-5">
+                    <!-- 订单详情 -->
+                    <h5 class="mb-3">项目信息</h5>
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">白洋淀门票 (示例)</h5>
+                            <p class="card-text">日期：2025-11-10</p>
+                            <p class="card-text">数量：2 人</p>
+                            <p class="card-text fw-bold">小计：¥ 200.00</p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- 联系人信息 -->
+                    <h5 class="mb-3">联系人信息</h5>
+                    <ul class="list-group mb-3">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>姓名：</span>
+                            <strong>张三 (示例)</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>手机号：</span>
+                            <strong>138****1234 (示例)</strong>
+                        </li>
+                    </ul>
+
+                    <hr>
+
+                    <!-- 价格总计 -->
+                    <div class="d-flex justify-content-end mb-4">
+                        <h4 class="mb-0">总计：<span class="text-danger fw-bold">¥ 200.00</span></h4>
+                    </div>
+
+                    <!-- 提交按钮 -->
+                    <form action="{% url 'orders:payment' order_sn='BD20250001' %}" method="GET"> <!-- 示例 order_sn -->
+                         <p class="text-muted small">点击“确认提交”将为您创建订单，请在30分钟内完成支付。</p>
+                        <button type="submit" class="btn btn-danger btn-lg w-100">
+                            确认提交并支付
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,179 @@
+{% extends 'common/base.html' %}
+{% load static %} <!-- 确保加载了 static -->
+
+{% block title %}景点详情 - 保定旅游网{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- 1. 头部 -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <!-- 假设从后端获取景点名称 -->
+            <h1>{{ spot.name|default:"景点详情页" }}</h1>
+            <p>评分：<span class="text-warning">★★★★☆</span> {{ spot.rating|default:"4.8" }} (100+ 条评价)</p>
+        </div>
+        <div class="col-lg-4 text-lg-end">
+            <button class="btn btn-outline-danger" id="favoriteButton">
+                <i class="far fa-heart"></i> 收藏
+            </button>
+            <button class="btn btn-outline-secondary">分享</button>
+        </div>
+    </div>
+
+    <div class="row g-5">
+        <!-- 2. 左侧：图文区 + 详情 + 评价 -->
+        <div class="col-lg-8">
+            <!-- 图文区 (轮播) -->
+            <section class="mb-4">
+                <div id="spotImageCarousel" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner rounded shadow-sm">
+                        <!-- 示例图片，应从后端循环 scenic.images -->
+                        <div class="carousel-item active">
+                            <img src="https://placehold.co/800x500/3498DB/FFFFFF?text=景点大图1" class="d-block w-100" alt="景点图片1">
+                        </div>
+                        <div class="carousel-item">
+                            <img src="https://placehold.co/800x500/1ABC9C/FFFFFF?text=景点大图2" class="d-block w-100" alt="景点图片2">
+                        </div>
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#spotImageCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#spotImageCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- 详情介绍 -->
+            <section class="mb-4">
+                <div class="card border-0 shadow-sm rounded-lg">
+                    <div class="card-header bg-white border-bottom-0 py-3">
+                         <h3 class="mb-0">景点介绍</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>{{ spot.description|default:"这是景点的详细介绍... Lorem ipsum dolor sit amet, consectetur adipiscing elit. ..." }}</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 周边配套 (Tab) -->
+            <section class="mb-4">
+                 <ul class="nav nav-tabs" id="nearbyTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="nearby-food-tab" data-bs-toggle="tab" data-bs-target="#nearby-food" type="button">周边餐饮</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="nearby-hotel-tab" data-bs-toggle="tab" data-bs-target="#nearby-hotel" type="button">周边住宿</button>
+                    </li>
+                 </ul>
+                 <div class="tab-content p-3 border border-top-0 rounded-bottom shadow-sm">
+                    <div class="tab-pane fade show active" id="nearby-food" role="tabpanel">
+                        <p>推荐餐饮：xxx农家院...</p>
+                    </div>
+                    <div class="tab-pane fade" id="nearby-hotel" role="tabpanel">
+                        <p>推荐住宿：xxx酒店...</p>
+                    </div>
+                 </div>
+            </section>
+
+            <!-- 评价区 -->
+            <section>
+                <h3>用户评价</h3>
+                <!-- 评价列表 -->
+                <div class="list-group mb-4 shadow-sm">
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">
+                                <img src="https://placehold.co/40x40/EAF2F8/3498DB?text=A" class="rounded-circle me-2" alt="avatar">
+                                用户A
+                            </h5>
+                            <small class="text-muted">2天前</small>
+                        </div>
+                        <p class="text-warning my-1">★★★★★</p>
+                        <p class="mb-1">景色宜人，非常推荐！</p>
+                        <!-- 评价图片 (可选) -->
+                        <img src="https://placehold.co/100x100/CCCCCC/FFFFFF?text=Review" alt="review image" class="img-thumbnail me-2"
+                             onerror="this.src='https://placehold.co/100x100/CCCCCC/FFFFFF?text=Image+Error'">
+                    </div>
+                    <!-- ... 更多评价 ... -->
+                </div>
+
+                <!-- 评价提交表单 (登录后可见) -->
+                <form id="reviewForm" class="card border-0 shadow-sm p-4 rounded-lg">
+                    <h5>发表我的评价</h5>
+                    <div class="mb-3">
+                        <label for="ratingSelect" class="form-label">评分</label>
+                        <select id="ratingSelect" class="form-select w-auto">
+                            <option value="5">5星 (非常好)</option>
+                            <option value="4">4星 (好)</option>
+                            <option value="3">3星 (一般)</option>
+                            <option value="2">2星 (差)</option>
+                            <option value="1">1星 (非常差)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="reviewContent" class="form-label">评价内容</label>
+                        <textarea class="form-control" id="reviewContent" rows="3" placeholder="写下你的游玩感受..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="reviewImages" class="form-label">上传图片</label>
+                        <input class="form-control" type="file" id="reviewImages" multiple>
+                    </div>
+                    <button type="submit" class="btn btn-primary">提交评价</button>
+                </form>
+            </section>
+        </div>
+
+        <!-- 3. 右侧：预订区 -->
+        <div class="col-lg-4">
+            <div class="card sticky-top shadow rounded-lg" style="top: 20px;">
+                <div class="card-header bg-primary text-white rounded-top-lg">
+                    <h4 class="mb-0">门票预订</h4>
+                </div>
+                <div class="card-body">
+                    <h5 class="text-danger display-6">¥{{ spot.ticket_price|default:"100.00" }} <span class="fs-6 text-muted">/人</span></h5>
+                    <ul class="list-unstyled text-muted">
+                        <li><i class="fas fa-check-circle text-success me-2"></i> 随时可退</li>
+                        <li><i class="fas fa-calendar-alt text-success me-2"></i> 需提前1天预订</li>
+                    </ul>
+                    <hr>
+                    <!-- 预订表单 -->
+                    <!--
+                        注意：这里的表单 action 应该指向一个 '订单确认' 页面
+                        我们在 `templates/scenic/detail.html` 的原设计中写的是 `action="{% url 'orders:confirm' %}"`
+                        我们需要确保这个URL是有效的
+                    -->
+                    <form id="bookingForm" action="{% url 'orders:confirm' %}" method="GET" class="needs-validation" novalidate>
+                        <!-- 传递必要参数，例如景点ID -->
+                        <input type="hidden" name="item_id" value="{{ spot.id|default:1 }}">
+                        <input type="hidden" name="item_type" value="scenic">
+
+                        <div class="mb-3">
+                            <label for="bookingDate" class="form-label fw-bold">选择日期</label>
+                            <input type="date" class="form-control" id="bookingDate" name="booking_date" required>
+                            <div class="invalid-feedback">请输入有效日期</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="bookingCount" class="form-label fw-bold">游玩人数</label>
+                            <input type="number" class="form-control" id="bookingCount" name="quantity" value="1" min="1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="contactName" class="form-label fw-bold">联系人姓名</label>
+                            <input type="text" class="form-control" id="contactName" name="contact_name" placeholder="请输入姓名" required>
+                            <div class="invalid-feedback">请输入联系人姓名</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="contactPhone" class="form-label fw-bold">联系人手机</label>
+                            <input type="tel" class="form-control" id="contactPhone" name="contact_phone" placeholder="请输入11位手机号" required pattern="[0-9]{11}">
+                            <div class="invalid-feedback">请输入有效的11位手机号</div>
+                        </div>
+                        <button type="submit" class="btn btn-danger btn-lg w-100">立即预订</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

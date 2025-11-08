@@ -1,0 +1,59 @@
+{% extends 'common/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- 1. 资讯正文 -->
+            <article>
+                <header class="mb-4">
+                    <!-- 标题 -->
+                    <h1 class="fw-bolder mb-1">保定三日游超详细攻略 (必看)</h1>
+                    <!-- 元信息 -->
+                    <div class="text-muted fst-italic mb-2">
+                        发布于 2025-11-01 / 阅读量 1024 / 分类:
+                        <a href="#!">旅游攻略</a>
+                    </div>
+                </header>
+                <!-- 封面图 -->
+                <figure class="mb-4">
+                    <img class="img-fluid rounded" src="https://placehold.co/900x400/F39C12/FFFFFF?text=攻略封面" alt="攻略封面" />
+                </figure>
+                <!-- 正文 (富文本) -->
+                <section class="mb-5">
+                    <p class="fs-5 mb-4">第一天：...</p>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. ...</p>
+                    <h2 class="fw-bolder mb-4 mt-5">第二天：深入探索</h2>
+                    <p>Nullam vel sem. ...</p>
+                </section>
+            </article>
+
+            <!-- 2. 评论区 -->
+            <section class="mb-5">
+                <div class="card bg-light border-0 shadow-sm">
+                    <div class="card-body">
+                        <!-- 评论提交表单 -->
+                        <form class="mb-4">
+                            <textarea class="form-control" rows="3" placeholder="加入讨论，发表评论..."></textarea>
+                            <button type="submit" class="btn btn-primary mt-2">提交</button>
+                        </form>
+
+                        <!-- 评论列表 -->
+                        <div class="d-flex mb-4">
+                            <div class="flex-shrink-0">
+                                <img class="rounded-circle" src="https://placehold.co/50x50/avatar.png" alt="avatar" />
+                            </div>
+                            <div class="ms-3">
+                                <div class="fw-bold">评论者A</div>
+                                非常有用的攻略！
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+{% endblock %}

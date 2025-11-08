@@ -1,0 +1,161 @@
+{% extends 'common/base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- 1. 轮播图区 -->
+<div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
+    <div class="carousel-indicators">
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+    </div>
+    <div class="carousel-inner" style="max-height: 500px; overflow: hidden;">
+        <div class="carousel-item active">
+            <img src="https://placehold.co/1920x500/cccccc/333333?text=%E7%99%BD%E6%B4%8B%E6%B7%80" class="d-block w-100" alt="白洋淀">
+            <div class="carousel-caption d-none d-md-block">
+                <h5>白洋淀</h5>
+                <p>华北明珠，荷香苇绿。</p>
+            </div>
+        </div>
+        <div class="carousel-item">
+            <img src="https://placehold.co/1920x500/bbbbbb/333333?text=%E5%8F%A4%E8%8E%B2%E8%8A%B1%E6%B1%A0" class="d-block w-100" alt="古莲花池">
+            <div class="carousel-caption d-none d-md-block">
+                <h5>古莲花池</h5>
+                <p>城市园林，历史悠久。</p>
+            </div>
+        </div>
+        <div class="carousel-item">
+            <img src="https://placehold.co/1920x500/aaaaaa/333333?text=%E7%9B%B4%E9%9A%B6%E6%80%BB%E7%9D%A3%E7%BD%B2" class="d-block w-100" alt="直隶总督署">
+            <div class="carousel-caption d-none d-md-block">
+                <h5>直隶总督署</h5>
+                <p>一座总督署，半部清史写。</p>
+            </div>
+        </div>
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+    </button>
+</div>
+
+<div class="container my-5">
+    <!-- 2. 热门景点推荐 (TOP8) -->
+    <section class="mb-5">
+        <h2 class="text-center mb-4">热门景点</h2>
+        <div class="row row-cols-1 row-cols-md-4 g-4">
+            <!-- 景点卡片 (循环8次) -->
+            {% for i in "12345678" %}
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <img src="https://placehold.co/400x300/eee/666?text=%E6%99%AF%E7%82%B9{{i}}" class="card-img-top" alt="热门景点">
+                    <div class="card-body">
+                        <h5 class="card-title">景点名称 {{i}}</h5>
+                        <p class="card-text">评分：<span class="text-warning">★★★★☆</span> 4.8</p>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 pb-3">
+                        <a href="{% url 'scenic:detail' pk=i %}" class="btn btn-primary btn-sm">查看详情</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- 3. 特色路线分类展示 -->
+    <section class="mb-5">
+        <h2 class="text-center mb-4">特色路线</h2>
+        <!-- Tab 切换 -->
+        <ul class="nav nav-tabs justify-content-center mb-3" id="routeTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="history-tab" data-bs-toggle="tab" data-bs-target="#history-content" type="button" role="tab">历史文化</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="nature-tab" data-bs-toggle="tab" data-bs-target="#nature-content" type="button" role="tab">自然风光</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="family-tab" data-bs-toggle="tab" data-bs-target="#family-content" type="button" role="tab">亲子游</button>
+            </li>
+        </ul>
+        <div class="tab-content" id="routeTabsContent">
+            <!-- 历史文化 -->
+            <div class="tab-pane fade show active" id="history-content" role="tabpanel">
+                <div class="row row-cols-1 row-cols-md-3 g-4">
+                    <!-- 路线卡片 -->
+                    <div class="col">
+                        <div class="card">
+                            <img src="https://placehold.co/400x300/dfd/666?text=%E5%8E%86%E5%8F%B2%E6%B8%B8" class="card-img-top" alt="路线">
+                            <div class="card-body">
+                                <h5 class="card-title">保定2日历史游</h5>
+                                <p class="card-text text-danger fw-bold">¥500 起 / 2天</p>
+                                <a href="{% url 'routes:detail' pk=1 %}" class="btn btn-outline-primary btn-sm">查看详情</a>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- ... 更多卡片 ... -->
+                </div>
+            </div>
+            <!-- 自然风光 -->
+            <div class="tab-pane fade" id="nature-content" role="tabpanel">
+                <!-- ... 路线卡片 ... -->
+            </div>
+            <!-- 亲子游 -->
+            <div class="tab-pane fade" id="family-content" role="tabpanel">
+                <!-- ... 路线卡片 ... -->
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. 最新旅游资讯 & 5. 用户评价 (左右布局) -->
+    <section class="mb-5">
+        <div class="row g-5">
+            <!-- 最新资讯 -->
+            <div class="col-lg-7">
+                <h2 class="mb-4">最新资讯</h2>
+                <div class="list-group">
+                    <a href="{% url 'news:detail' pk=1 %}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">保定旅游攻略：必去的5个地方</h5>
+                            <small>2025-11-04</small>
+                        </div>
+                        <p class="mb-1">这里是资讯的简要描述...</p>
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">... (资讯2) ...</a>
+                    <a href="#" class="list-group-item list-group-item-action">... (资讯3) ...</a>
+                </div>
+            </div>
+            <!-- 用户评价 -->
+            <div class="col-lg-5">
+                <h2 class="mb-4">用户评价</h2>
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <!-- 评价轮播 -->
+                        <div id="reviewCarousel" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-inner text-center p-3">
+                                <div class="carousel-item active">
+                                    <img src="https://placehold.co/80x80/avatar.png" class="rounded-circle mb-3" alt="用户头像">
+                                    <h5>用户A</h5>
+                                    <p class="text-warning">★★★★★</p>
+                                    <p class="fst-italic">"白洋淀太美了，不虚此行！"</p>
+                                    <small class="text-muted">- 评价于 白洋淀</small>
+                                </div>
+                                <div class="carousel-item">
+                                    <img src="https://placehold.co/80x80/avatar2.png" class="rounded-circle mb-3" alt="用户头像">
+                                    <h5>用户B</h5>
+                                    <p class="text-warning">★★★★☆</p>
+                                    <p class="fst-italic">"总督署很有历史感，值得一看。"</p>
+                                    <small class="text-muted">- 评价于 直隶总督署</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</div>
+{% endblock %}
