@@ -1,7 +1,8 @@
 from django.views.generic import TemplateView
 
 class ScenicListView(TemplateView):
-    template_name = "scenic/../../templates/routes/../../templates/scenic/list.html"
+    # 修正：指向景点列表模板
+    template_name = "scenic/list.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -10,7 +11,8 @@ class ScenicListView(TemplateView):
         return context
 
 class ScenicDetailView(TemplateView):
-    template_name = "scenic/../../templates/routes/detail.html"
+    # 修正：这个路径也需要清理
+    template_name = "scenic/detail.html" # 原本是 "scenic/../../templates/routes/detail.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

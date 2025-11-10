@@ -10,6 +10,6 @@ urlpatterns = [
     path('favorites/', views.UserFavoritesView.as_view(), name='favorites'),
     path('reviews/', views.UserReviewsView.as_view(), name='reviews'),
     # 登录、注册页面可以放在这里
-    # path('login/', views.LoginView.as_view(), name='login'),
-    # path('register/', views.RegisterView.as_view(), name='register'),
+    path('login/', views.LoginView.as_view(), name='login'),
+    path('register/', views.RegisterView.as_view(), name='register'),
 ]

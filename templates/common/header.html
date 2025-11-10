@@ -3,12 +3,13 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
         <div class="container">
             <a class="navbar-brand fw-bold text-primary" href="{% url 'index:index' %}">保定旅游网</a>
-            
+
             <!-- 移动端汉堡按钮 -->
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+                    aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            
+
             <!-- 导航主体 -->
             <div class="collapse navbar-collapse" id="mainNavbar">
                 <!-- 1. 主导航 (左侧) -->
@@ -40,23 +41,28 @@
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                     {% if user.is_authenticated %}
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarUserDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <img src="{{ user.avatar.url|default:'https://placehold.co/30x30/avatar.png' }}" alt="avatar" class="rounded-circle" style="width: 30px; height: 30px; object-fit: cover;">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarUserDropdown" role="button"
+                               data-bs-toggle="dropdown" aria-expanded="false">
+                                <img src="{{ user.avatar.url|default:'https://placehold.co/30x30/avatar.png' }}"
+                                     alt="avatar" class="rounded-circle"
+                                     style="width: 30px; height: 30px; object-fit: cover;">
                                 {{ user.username }}
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarUserDropdown">
                                 <li><a class="dropdown-item" href="{% url 'users:home' %}">个人中心</a></li>
                                 <li><a class="dropdown-item" href="{% url 'users:orders' %}">我的订单</a></li>
-                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
                                 <li><a class="dropdown-item" href="#">退出登录</a></li>
                             </ul>
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="btn btn-outline-primary btn-sm me-2" href="#">登录</a>
+                            <a class="btn btn-outline-primary btn-sm me-2" href="{% url 'users:login' %}">登录</a>
                         </li>
                         <li class="nav-item">
-                            <a class="btn btn-primary btn-sm" href="#">注册</a>
+                            <a class="btn btn-primary btn-sm" href="{% url 'users:register' %}">注册</a>
                         </li>
                     {% endif %}
                 </ul>
