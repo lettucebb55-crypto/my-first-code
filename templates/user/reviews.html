@@ -1,5 +1,6 @@
 {% extends 'common/base.html' %}
 {% load static %}
+{% load index_tags %}
 
 {% block content %}
 <div class="container my-5">
@@ -7,13 +8,31 @@
         <!-- 左侧导航 -->
         <div class="col-lg-3">
              <div class="card">
-                <div class="card-body text-center">...</div>
+                <div class="card-body text-center">
+                    {% if user.avatar %}
+                    <img src="{{ user.avatar.url }}" alt="avatar" class="rounded-circle mb-3" style="width: 80px; height: 80px; object-fit: cover;">
+                    {% else %}
+                    <img src="https://placehold.co/80x80/3498DB/FFFFFF?text={{ user.username|first|upper }}" alt="avatar" class="rounded-circle mb-3">
+                    {% endif %}
+                    <h6 class="mb-1">用户名 ({{ user.username }})</h6>
+                    <p class="text-muted small mb-0">{{ user.phone|default:"未绑定手机" }}</p>
+                </div>
                 <div class="list-group list-group-flush">
-                    <a href="{% url 'users:home' %}" class="list-group-item list-group-item-action">个人中心</a>
-                    <a href="{% url 'users:profile' %}" class="list-group-item list-group-item-action">信息管理</a>
-                    <a href="{% url 'users:orders' %}" class="list-group-item list-group-item-action">我的订单</a>
-                    <a href="{% url 'users:favorites' %}" class="list-group-item list-group-item-action">我的收藏</a>
-                    <a href="{% url 'users:reviews' %}" class="list-group-item list-group-item-action active" aria-current="true">我的评价</a>
+                    <a href="{% url 'users:home' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-home me-2"></i>个人中心
+                    </a>
+                    <a href="{% url 'users:profile' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-user me-2"></i>信息管理
+                    </a>
+                    <a href="{% url 'users:orders' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-shopping-bag me-2"></i>我的订单
+                    </a>
+                    <a href="{% url 'users:favorites' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-heart me-2"></i>我的收藏
+                    </a>
+                    <a href="{% url 'users:reviews' %}" class="list-group-item list-group-item-action active" aria-current="true">
+                        <i class="fas fa-star me-2"></i>我的评价
+                    </a>
                 </div>
             </div>
         </div>
@@ -22,27 +41,81 @@
         <div class="col-lg-9">
              <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0">我的评价</h5>
+                    <h5 class="mb-0"><i class="fas fa-star me-2"></i>我的评价</h5>
                 </div>
                 <div class="card-body">
+                    {% if comment_list %}
                     <!-- 评价列表 (v-stack) -->
                     <div class="vstack gap-3">
-                        <div class="card">
-                            <div class="card-header d-flex justify-content-between">
-                                <span>评价对象：白洋淀</span>
-                                <span class="text-muted">2025-11-03</span>
+                        {% for item in comment_list %}
+                        <div class="card border" style="position: relative; z-index: 1;">
+                            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="fw-bold">评价对象：</span>
+                                    <span>{{ item.target_name|default:"未知对象" }}</span>
+                                    <span class="badge bg-secondary ms-2">{{ item.comment.get_target_type_display }}</span>
+                                </div>
+                                <span class="text-muted">{{ item.comment.created_at|date:"Y-m-d H:i" }}</span>
                             </div>
                             <div class="card-body">
-                                <p class="text-warning">★★★★★</p>
-                                <p>景色宜人，非常推荐！</p>
-                                <img src="https://placehold.co/100x100/review.png" alt="review image" class="img-thumbnail me-2">
-                            </div>
-                            <div class="card-footer text-end">
-                                <a href="#" class="btn btn-sm btn-outline-danger">删除评价</a>
+                                <div class="mb-2">
+                                    <span class="text-warning">
+                                        {% with stars=item.comment.rating|stars %}
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= stars.full %}
+                                                    ★
+                                                {% elif forloop.counter == stars.full|add:1 and stars.has_half %}
+                                                    ★
+                                                {% else %}
+                                                    ☆
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endwith %}
+                                    </span>
+                                    <span class="ms-2 fw-bold">{{ item.comment.rating }}分</span>
+                                </div>
+                                <p class="mb-2">{{ item.comment.content|linebreaks }}</p>
+                                {% if item.comment.get_images_list %}
+                                <div class="mb-2">
+                                    {% for img_path in item.comment.get_images_list %}
+                                    <img src="{{ img_path }}" alt="评价图片" class="img-thumbnail me-2" style="max-width: 100px; max-height: 100px; object-fit: cover;">
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <div class="mt-3">
+                                    {% if item.target_type == 'scenic' and item.target_id %}
+                                    <a href="{% url 'scenic:detail' pk=item.target_id %}" class="btn btn-primary btn-sm" style="position: relative; z-index: 10; cursor: pointer;" onclick="console.log('点击查看详情: 景点 {{ item.target_id }}');">
+                                        <i class="fas fa-eye me-1"></i>查看详情
+                                    </a>
+                                    {% elif item.target_type == 'route' and item.target_id %}
+                                    <a href="{% url 'routes:detail' pk=item.target_id %}" class="btn btn-primary btn-sm" style="position: relative; z-index: 10; cursor: pointer;" onclick="console.log('点击查看详情: 路线 {{ item.target_id }}');">
+                                        <i class="fas fa-eye me-1"></i>查看详情
+                                    </a>
+                                    {% elif item.target_type == 'hotel' and item.target_id %}
+                                    <a href="{% url 'hotels:detail' pk=item.target_id %}" class="btn btn-primary btn-sm" style="position: relative; z-index: 10; cursor: pointer;" onclick="console.log('点击查看详情: 酒店 {{ item.target_id }}');">
+                                        <i class="fas fa-eye me-1"></i>查看详情
+                                    </a>
+                                    {% elif item.target_type == 'news' and item.target_id %}
+                                    <a href="{% url 'news:detail' pk=item.target_id %}" class="btn btn-primary btn-sm" style="position: relative; z-index: 10; cursor: pointer;" onclick="console.log('点击查看详情: 资讯 {{ item.target_id }}');">
+                                        <i class="fas fa-eye me-1"></i>查看详情
+                                    </a>
+                                    {% else %}
+                                    <span class="btn btn-secondary btn-sm disabled">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>无法查看（对象不存在或已删除）
+                                    </span>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
-                        <!-- ... -->
+                        {% endfor %}
                     </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-comment-slash fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">您还没有发表任何评价</p>
+                        <a href="{% url 'index:index' %}" class="btn btn-primary">去逛逛</a>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

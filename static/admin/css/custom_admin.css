@@ -1,0 +1,739 @@
+/* 保定旅游网 - 后台管理界面样式（参考设计） */
+
+/* ========== 全局样式 ========== */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: #f5f5f5;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+#container {
+    display: flex;
+    min-height: 100vh;
+    background: #f5f5f5;
+}
+
+/* ========== 头部样式 ========== */
+#header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: #ffffff;
+    border-bottom: 1px solid #e0e0e0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 30px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+#branding {
+    display: flex;
+    align-items: center;
+}
+
+#site-name {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+}
+
+#site-name a {
+    color: #333;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#user-tools {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 14px;
+    color: #666;
+}
+
+#user-tools a {
+    color: #666;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+#user-tools a:hover {
+    color: #333;
+}
+
+#user-tools .separator {
+    color: #ccc;
+    margin: 0 5px;
+}
+
+/* ========== 左侧导航栏 ========== */
+.admin-sidebar {
+    position: fixed;
+    left: 0;
+    top: 60px;
+    width: 220px;
+    height: calc(100vh - 60px);
+    background: #1e3a5f;
+    overflow-y: auto;
+    z-index: 999;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+}
+
+.admin-sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.admin-sidebar::-webkit-scrollbar-track {
+    background: #1a2f4d;
+}
+
+.admin-sidebar::-webkit-scrollbar-thumb {
+    background: #2d4a6b;
+    border-radius: 3px;
+}
+
+.admin-sidebar::-webkit-scrollbar-thumb:hover {
+    background: #3a5a7a;
+}
+
+.admin-sidebar .nav-section {
+    padding: 10px 0;
+}
+
+.admin-sidebar .nav-section-title {
+    padding: 12px 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #8fa3b8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0;
+}
+
+.admin-sidebar .nav-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: #e0e8f0;
+    text-decoration: none;
+    transition: all 0.2s;
+    position: relative;
+    font-size: 14px;
+    border-left: 3px solid transparent;
+}
+
+.admin-sidebar .nav-item i {
+    margin-right: 12px;
+    width: 18px;
+    text-align: center;
+    font-size: 16px;
+}
+
+.admin-sidebar .nav-item:hover {
+    background: #2a4a6f;
+    color: #ffffff;
+    border-left-color: #4a90e2;
+}
+
+.admin-sidebar .nav-item.active {
+    background: #4a90e2;
+    color: #ffffff;
+    border-left-color: #4a90e2;
+    font-weight: 600;
+}
+
+.admin-sidebar .nav-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #4a90e2;
+}
+
+/* ========== 主内容区 ========== */
+#content {
+    margin-left: 220px;
+    margin-top: 60px;
+    padding: 30px;
+    width: calc(100% - 220px);
+    background: #f5f5f5;
+    min-height: calc(100vh - 60px);
+}
+
+#content-main {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e0e0e0;
+}
+
+#content-main h1 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 25px 0;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #4a90e2;
+}
+
+#content-main h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+    margin: 30px 0 20px 0;
+}
+
+#content-main h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin: 25px 0 15px 0;
+}
+
+/* ========== 面包屑导航 ========== */
+.breadcrumbs {
+    background: #ffffff;
+    padding: 15px 30px;
+    margin: 0 -30px 20px -30px;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 14px;
+    color: #666;
+}
+
+.breadcrumbs a {
+    color: #4a90e2;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.breadcrumbs a:hover {
+    text-decoration: underline;
+}
+
+.breadcrumbs .separator {
+    color: #ccc;
+    margin: 0 8px;
+}
+
+/* ========== 表格样式 ========== */
+#result_list {
+    width: 100%;
+    border-collapse: collapse;
+    background: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e0e0e0;
+    margin-top: 20px;
+}
+
+#result_list thead {
+    background: #f8f9fa;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+#result_list thead th {
+    padding: 15px 20px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+#result_list tbody tr {
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s;
+}
+
+#result_list tbody tr:hover {
+    background: #f8f9fa;
+}
+
+#result_list tbody tr:last-child {
+    border-bottom: none;
+}
+
+#result_list tbody td {
+    padding: 15px 20px;
+    font-size: 14px;
+    color: #333;
+    vertical-align: middle;
+}
+
+#result_list tbody td a {
+    color: #4a90e2;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+#result_list tbody td a:hover {
+    text-decoration: underline;
+}
+
+/* ========== 表单样式 ========== */
+.form-row {
+    margin-bottom: 25px;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.form-row label {
+    display: block;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+input[type="time"],
+input[type="url"],
+select,
+textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: all 0.2s;
+    background: #ffffff;
+    color: #333;
+    font-family: inherit;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+input[type="time"]:focus,
+input[type="url"]:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+}
+
+input[type="text"]::placeholder,
+input[type="email"]::placeholder,
+input[type="password"]::placeholder,
+input[type="number"]::placeholder,
+textarea::placeholder {
+    color: #999;
+}
+
+/* ========== 按钮样式 ========== */
+.button,
+input[type="submit"],
+input[type="button"],
+a.button {
+    display: inline-block;
+    padding: 10px 20px;
+    background: #4a90e2;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(74, 144, 226, 0.2);
+}
+
+.button:hover,
+input[type="submit"]:hover,
+input[type="button"]:hover,
+a.button:hover {
+    background: #357abd;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(74, 144, 226, 0.3);
+}
+
+.button.default,
+input[type="submit"].default,
+.submit-row input.default {
+    background: #10b981;
+}
+
+.button.default:hover,
+input[type="submit"].default:hover,
+.submit-row input.default:hover {
+    background: #059669;
+}
+
+/* 编辑按钮 */
+.changelink,
+a.changelink {
+    display: inline-block;
+    padding: 6px 12px;
+    background: #f0f0f0;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    text-decoration: none;
+    transition: all 0.2s;
+    margin-right: 8px;
+}
+
+.changelink:hover,
+a.changelink:hover {
+    background: #e0e0e0;
+    border-color: #ccc;
+}
+
+/* 删除按钮 */
+.deletelink,
+a.deletelink {
+    display: inline-block;
+    padding: 6px 12px;
+    background: #ef4444;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    font-size: 13px;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.deletelink:hover,
+a.deletelink:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+}
+
+/* 添加按钮 */
+.addlink,
+a.addlink {
+    display: inline-block;
+    padding: 10px 20px;
+    background: #10b981;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+}
+
+.addlink:hover,
+a.addlink:hover {
+    background: #059669;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+}
+
+/* ========== 提交行样式 ========== */
+.submit-row {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 30px;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.submit-row input {
+    margin-right: 10px;
+}
+
+/* ========== 模块样式 ========== */
+.module {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.module h2 {
+    background: #f8f9fa;
+    color: #333;
+    padding: 15px 20px;
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.module h3 {
+    background: #f8f9fa;
+    color: #333;
+    padding: 12px 20px;
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.module table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.module table th {
+    background: #f8f9fa;
+    color: #333;
+    padding: 12px 20px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 13px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.module table td {
+    padding: 12px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    color: #333;
+    font-size: 14px;
+}
+
+.module table tr:last-child td {
+    border-bottom: none;
+}
+
+/* ========== 筛选器样式 ========== */
+#changelist-filter {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+#changelist-filter h2 {
+    background: #f8f9fa;
+    color: #333;
+    padding: 15px 20px;
+    margin: -20px -20px 20px -20px;
+    border-radius: 8px 8px 0 0;
+    font-size: 14px;
+    font-weight: 600;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+#changelist-filter h3 {
+    color: #333;
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+#changelist-filter a {
+    display: block;
+    padding: 8px 12px;
+    color: #4a90e2;
+    text-decoration: none;
+    border-radius: 4px;
+    margin-bottom: 5px;
+    transition: all 0.2s;
+    font-size: 14px;
+}
+
+#changelist-filter a:hover {
+    background: #f0f7ff;
+    color: #357abd;
+}
+
+#changelist-filter a.selected {
+    background: #4a90e2;
+    color: #ffffff;
+    font-weight: 500;
+}
+
+/* ========== 消息提示样式 ========== */
+.messagelist {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 20px 0;
+}
+
+.messagelist li {
+    padding: 12px 20px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.messagelist li.success {
+    background: #d1fae5;
+    color: #065f46;
+    border-left: 4px solid #10b981;
+}
+
+.messagelist li.error {
+    background: #fee2e2;
+    color: #991b1b;
+    border-left: 4px solid #ef4444;
+}
+
+.messagelist li.warning {
+    background: #fef3c7;
+    color: #92400e;
+    border-left: 4px solid #f59e0b;
+}
+
+.messagelist li.info {
+    background: #dbeafe;
+    color: #1e40af;
+    border-left: 4px solid #3b82f6;
+}
+
+/* ========== 字段集样式 ========== */
+fieldset {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    background: #ffffff;
+}
+
+fieldset legend {
+    font-weight: 600;
+    color: #333;
+    padding: 0 10px;
+    font-size: 16px;
+}
+
+/* ========== 内联表单样式 ========== */
+.inline-group {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    background: #ffffff;
+}
+
+.inline-group h2 {
+    background: #f8f9fa;
+    color: #333;
+    padding: 15px 20px;
+    margin: -20px -20px 20px -20px;
+    border-radius: 8px 8px 0 0;
+    font-size: 14px;
+    font-weight: 600;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+/* ========== 帮助文本和错误提示 ========== */
+.help,
+.help-block {
+    color: #666;
+    font-size: 13px;
+    margin-top: 5px;
+    display: block;
+}
+
+.errorlist {
+    color: #ef4444;
+    font-size: 13px;
+    margin-top: 5px;
+    list-style: none;
+    padding: 0;
+}
+
+.errorlist li {
+    padding: 5px 0;
+    background: #fee2e2;
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin-bottom: 5px;
+    border-left: 3px solid #ef4444;
+}
+
+.required {
+    color: #ef4444;
+    font-weight: bold;
+    margin-left: 3px;
+}
+
+/* ========== 响应式设计 ========== */
+@media (max-width: 768px) {
+    .admin-sidebar {
+        width: 0;
+        overflow: hidden;
+    }
+    
+    #content {
+        margin-left: 0;
+        width: 100%;
+    }
+}
+
+/* ========== 其他样式 ========== */
+#content-related {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+#content-related h2 {
+    background: #f8f9fa;
+    color: #333;
+    padding: 15px 20px;
+    margin: -20px -20px 20px -20px;
+    border-radius: 8px 8px 0 0;
+    font-size: 14px;
+    font-weight: 600;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+#content-related ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#content-related li {
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+    color: #333;
+    font-size: 14px;
+}
+
+#content-related li:last-child {
+    border-bottom: none;
+}
+
+#content-related li a {
+    color: #4a90e2;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+#content-related li a:hover {
+    text-decoration: underline;
+}

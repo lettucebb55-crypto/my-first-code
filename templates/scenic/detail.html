@@ -4,18 +4,43 @@
 {% block title %}景点详情 - 保定旅游网{% endblock %}
 
 {% block content %}
+{% if spot %}
 <div class="container my-5">
     <!-- 1. 头部 -->
     <div class="row mb-4">
         <div class="col-lg-8">
-            <!-- 假设从后端获取景点名称 -->
-            <h1>{{ spot.name|default:"景点详情页" }}</h1>
-            <p>评分：<span class="text-warning">★★★★☆</span> {{ spot.rating|default:"4.8" }} (100+ 条评价)</p>
+            <h1>{{ spot.name }}</h1>
+            <div class="d-flex align-items-center gap-3 mb-2">
+                <span class="text-warning">
+                    {% load index_tags %}
+                    {% with stars=spot.rating|stars %}
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= stars.full %}
+                                ★
+                            {% elif forloop.counter == stars.full|add:1 and stars.has_half %}
+                                ★
+                            {% else %}
+                                ☆
+                            {% endif %}
+                        {% endfor %}
+                    {% endwith %}
+                </span>
+                <span class="fw-bold">{{ spot.rating|floatformat:1 }}</span>
+                <span class="text-muted">({{ spot.views_count }} 次浏览)</span>
+                {% if spot.category %}
+                <span class="badge bg-primary">{{ spot.category.name }}</span>
+                {% endif %}
+            </div>
+            {% if spot.address %}
+            <p class="text-muted"><i class="fas fa-map-marker-alt"></i> {{ spot.address }}</p>
+            {% endif %}
         </div>
         <div class="col-lg-4 text-lg-end">
-            <button class="btn btn-outline-danger" id="favoriteButton">
+            {% if user.is_authenticated %}
+            <button class="btn btn-outline-danger" id="favoriteButton" data-spot-id="{{ spot.id }}" data-spot-type="scenic">
                 <i class="far fa-heart"></i> 收藏
             </button>
+            {% endif %}
             <button class="btn btn-outline-secondary">分享</button>
         </div>
     </div>
@@ -25,16 +50,21 @@
         <div class="col-lg-8">
             <!-- 图文区 (轮播) -->
             <section class="mb-4">
+                {% if spot_images %}
                 <div id="spotImageCarousel" class="carousel slide" data-bs-ride="carousel">
-                    <div class="carousel-inner rounded shadow-sm">
-                        <!-- 示例图片，应从后端循环 scenic.images -->
-                        <div class="carousel-item active">
-                            <img src="https://placehold.co/800x500/3498DB/FFFFFF?text=景点大图1" class="d-block w-100" alt="景点图片1">
-                        </div>
-                        <div class="carousel-item">
-                            <img src="https://placehold.co/800x500/1ABC9C/FFFFFF?text=景点大图2" class="d-block w-100" alt="景点图片2">
-                        </div>
+                    <div class="carousel-indicators">
+                        {% for image in spot_images %}
+                        <button type="button" data-bs-target="#spotImageCarousel" data-bs-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active"{% endif %}></button>
+                        {% endfor %}
                     </div>
+                    <div class="carousel-inner rounded shadow-sm">
+                        {% for image in spot_images %}
+                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                            <img src="{{ image.image.url }}" class="d-block w-100" alt="{{ spot.name }}" style="height: 500px; object-fit: cover;">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if spot_images|length > 1 %}
                     <button class="carousel-control-prev" type="button" data-bs-target="#spotImageCarousel" data-bs-slide="prev">
                         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                         <span class="visually-hidden">Previous</span>
@@ -43,7 +73,13 @@
                         <span class="carousel-control-next-icon" aria-hidden="true"></span>
                         <span class="visually-hidden">Next</span>
                     </button>
+                    {% endif %}
                 </div>
+                {% elif spot.cover_image %}
+                <img src="{{ spot.cover_image.url }}" class="img-fluid rounded shadow-sm w-100" alt="{{ spot.name }}" style="height: 500px; object-fit: cover;">
+                {% else %}
+                <img src="https://placehold.co/800x500/3498DB/FFFFFF?text={{ spot.name }}" class="img-fluid rounded shadow-sm w-100" alt="{{ spot.name }}" style="height: 500px; object-fit: cover;">
+                {% endif %}
             </section>
 
             <!-- 详情介绍 -->
@@ -53,7 +89,52 @@
                          <h3 class="mb-0">景点介绍</h3>
                     </div>
                     <div class="card-body">
-                        <p>{{ spot.description|default:"这是景点的详细介绍... Lorem ipsum dolor sit amet, consectetur adipiscing elit. ..." }}</p>
+                        <div style="line-height: 1.8; font-size: 1.1rem;">
+                            {{ spot.description|linebreaks }}
+                        </div>
+                        
+                        <!-- 详细信息 -->
+                        <div class="row mt-4">
+                            {% if spot.open_time %}
+                            <div class="col-md-6 mb-3">
+                                <strong><i class="fas fa-clock"></i> 开放时间：</strong>
+                                <p class="mb-0">{{ spot.open_time }}</p>
+                            </div>
+                            {% endif %}
+                            {% if spot.visit_duration %}
+                            <div class="col-md-6 mb-3">
+                                <strong><i class="fas fa-hourglass-half"></i> 建议游览时长：</strong>
+                                <p class="mb-0">{{ spot.visit_duration }}</p>
+                            </div>
+                            {% endif %}
+                            {% if spot.best_season %}
+                            <div class="col-md-6 mb-3">
+                                <strong><i class="fas fa-calendar-alt"></i> 最佳游览季节：</strong>
+                                <p class="mb-0">{{ spot.best_season }}</p>
+                            </div>
+                            {% endif %}
+                            {% if spot.phone %}
+                            <div class="col-md-6 mb-3">
+                                <strong><i class="fas fa-phone"></i> 联系电话：</strong>
+                                <p class="mb-0">{{ spot.phone }}</p>
+                            </div>
+                            {% endif %}
+                            {% if spot.traffic_info %}
+                            <div class="col-12 mb-3">
+                                <strong><i class="fas fa-route"></i> 交通信息：</strong>
+                                <p class="mb-0">{{ spot.traffic_info|linebreaks }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if spot.tags %}
+                        <div class="mt-3">
+                            <strong>标签：</strong>
+                            {% for tag in spot.get_tags_list %}
+                            <span class="badge bg-secondary me-1">{{ tag }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </section>
@@ -70,59 +151,119 @@
                  </ul>
                  <div class="tab-content p-3 border border-top-0 rounded-bottom shadow-sm">
                     <div class="tab-pane fade show active" id="nearby-food" role="tabpanel">
-                        <p>推荐餐饮：xxx农家院...</p>
+                        <h6 class="mb-3">推荐餐饮</h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="fas fa-utensils text-warning me-2"></i> 景区内餐厅 - 提供当地特色美食</li>
+                            <li class="mb-2"><i class="fas fa-utensils text-warning me-2"></i> 周边农家院 - 体验农家风味</li>
+                            <li class="mb-2"><i class="fas fa-utensils text-warning me-2"></i> 保定特色小吃 - 驴肉火烧、糖葫芦等</li>
+                        </ul>
+                        <p class="text-muted small">具体餐厅信息请咨询景区工作人员</p>
                     </div>
                     <div class="tab-pane fade" id="nearby-hotel" role="tabpanel">
-                        <p>推荐住宿：xxx酒店...</p>
+                        <h6 class="mb-3">推荐住宿</h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="fas fa-hotel text-primary me-2"></i> 保定市区酒店 - 交通便利，设施完善</li>
+                            <li class="mb-2"><i class="fas fa-hotel text-primary me-2"></i> 景区附近民宿 - 体验当地风情</li>
+                            <li class="mb-2"><i class="fas fa-hotel text-primary me-2"></i> 经济型酒店 - 性价比高</li>
+                        </ul>
+                        <p class="text-muted small">建议提前预订，特别是节假日期间</p>
                     </div>
                  </div>
             </section>
 
             <!-- 评价区 -->
             <section>
-                <h3>用户评价</h3>
-                <!-- 评价列表 -->
-                <div class="list-group mb-4 shadow-sm">
-                    <div class="list-group-item">
-                        <div class="d-flex w-100 justify-content-between">
-                            <h5 class="mb-1">
-                                <img src="https://placehold.co/40x40/EAF2F8/3498DB?text=A" class="rounded-circle me-2" alt="avatar">
-                                用户A
-                            </h5>
-                            <small class="text-muted">2天前</small>
-                        </div>
-                        <p class="text-warning my-1">★★★★★</p>
-                        <p class="mb-1">景色宜人，非常推荐！</p>
-                        <!-- 评价图片 (可选) -->
-                        <img src="https://placehold.co/100x100/CCCCCC/FFFFFF?text=Review" alt="review image" class="img-thumbnail me-2"
-                             onerror="this.src='https://placehold.co/100x100/CCCCCC/FFFFFF?text=Image+Error'">
+                <h3 class="mb-4">用户评价 
+                    {% if comments %}
+                    <small class="text-muted">({{ comments|length }})</small>
+                    {% endif %}
+                </h3>
+                
+                <!-- 评价提交表单 -->
+                {% if user.is_authenticated %}
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">发表评价</h5>
+                        <form method="post" action="{% url 'scenic:detail' pk=spot.id %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">评分</label>
+                                <div class="rating-input d-flex align-items-center gap-2">
+                                    <select name="rating" class="form-select" style="width: auto;" required>
+                                        <option value="5" selected>5分 - 非常满意</option>
+                                        <option value="4">4分 - 满意</option>
+                                        <option value="3">3分 - 一般</option>
+                                        <option value="2">2分 - 不满意</option>
+                                        <option value="1">1分 - 非常不满意</option>
+                                    </select>
+                                    <span class="text-warning fs-5" id="ratingDisplay">★★★★★</span>
+                                </div>
+                                <script>
+                                    document.querySelector('select[name="rating"]').addEventListener('change', function() {
+                                        const rating = parseInt(this.value);
+                                        const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+                                        document.getElementById('ratingDisplay').textContent = stars;
+                                    });
+                                </script>
+                            </div>
+                            <div class="mb-3">
+                                <label for="commentContent" class="form-label fw-bold">评价内容</label>
+                                <textarea class="form-control" id="commentContent" name="content" rows="4" placeholder="分享您的游览体验..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">提交评价</button>
+                        </form>
                     </div>
-                    <!-- ... 更多评价 ... -->
                 </div>
-
-                <!-- 评价提交表单 (登录后可见) -->
-                <form id="reviewForm" class="card border-0 shadow-sm p-4 rounded-lg">
-                    <h5>发表我的评价</h5>
-                    <div class="mb-3">
-                        <label for="ratingSelect" class="form-label">评分</label>
-                        <select id="ratingSelect" class="form-select w-auto">
-                            <option value="5">5星 (非常好)</option>
-                            <option value="4">4星 (好)</option>
-                            <option value="3">3星 (一般)</option>
-                            <option value="2">2星 (差)</option>
-                            <option value="1">1星 (非常差)</option>
-                        </select>
+                {% else %}
+                <div class="alert alert-info mb-4">
+                    <a href="{% url 'users:login' %}">登录</a>后即可发表评价
+                </div>
+                {% endif %}
+                
+                <!-- 评价列表 -->
+                {% if comments %}
+                <div class="list-group shadow-sm">
+                    {% for comment in comments %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between mb-2">
+                            <div class="d-flex align-items-center">
+                                {% if comment.user.avatar %}
+                                <img src="{{ comment.user.avatar.url }}" class="rounded-circle me-2" alt="avatar" style="width: 40px; height: 40px; object-fit: cover;">
+                                {% else %}
+                                <img src="https://placehold.co/40x40/EAF2F8/3498DB?text={{ comment.user.username|first|upper }}" class="rounded-circle me-2" alt="avatar">
+                                {% endif %}
+                                <h6 class="mb-0">{{ comment.user.username }}</h6>
+                            </div>
+                            <small class="text-muted">{{ comment.created_at|date:"Y-m-d H:i" }}</small>
+                        </div>
+                        <div class="mb-2">
+                            <span class="text-warning">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= comment.rating %}
+                                        ★
+                                    {% else %}
+                                        ☆
+                                    {% endif %}
+                                {% endfor %}
+                            </span>
+                            <span class="ms-2 fw-bold">{{ comment.rating }}分</span>
+                        </div>
+                        <p class="mb-1">{{ comment.content|linebreaks }}</p>
+                        {% if comment.get_images_list %}
+                        <div class="mt-2">
+                            {% for img_path in comment.get_images_list %}
+                            <img src="{{ img_path }}" alt="评价图片" class="img-thumbnail me-2" style="max-width: 100px; max-height: 100px; object-fit: cover;">
+                            {% endfor %}
+                        </div>
+                        {% endif %}
                     </div>
-                    <div class="mb-3">
-                        <label for="reviewContent" class="form-label">评价内容</label>
-                        <textarea class="form-control" id="reviewContent" rows="3" placeholder="写下你的游玩感受..."></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="reviewImages" class="form-label">上传图片</label>
-                        <input class="form-control" type="file" id="reviewImages" multiple>
-                    </div>
-                    <button type="submit" class="btn btn-primary">提交评价</button>
-                </form>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="alert alert-secondary text-center">
+                    <p class="mb-0">暂无评价，快来发表第一条评价吧！</p>
+                </div>
+                {% endif %}
             </section>
         </div>
 
@@ -133,7 +274,7 @@
                     <h4 class="mb-0">门票预订</h4>
                 </div>
                 <div class="card-body">
-                    <h5 class="text-danger display-6">¥{{ spot.ticket_price|default:"100.00" }} <span class="fs-6 text-muted">/人</span></h5>
+                    <h5 class="text-danger display-6">¥{{ spot.ticket_price }} <span class="fs-6 text-muted">/人</span></h5>
                     <ul class="list-unstyled text-muted">
                         <li><i class="fas fa-check-circle text-success me-2"></i> 随时可退</li>
                         <li><i class="fas fa-calendar-alt text-success me-2"></i> 需提前1天预订</li>
@@ -147,7 +288,7 @@
                     -->
                     <form id="bookingForm" action="{% url 'orders:confirm' %}" method="GET" class="needs-validation" novalidate>
                         <!-- 传递必要参数，例如景点ID -->
-                        <input type="hidden" name="item_id" value="{{ spot.id|default:1 }}">
+                        <input type="hidden" name="item_id" value="{{ spot.id }}">
                         <input type="hidden" name="item_type" value="scenic">
 
                         <div class="mb-3">
@@ -175,5 +316,41 @@
             </div>
         </div>
     </div>
+    
+    <!-- 相关景点推荐 -->
+    {% if related_spots %}
+    <section class="mt-5">
+        <h3 class="mb-4">相关景点推荐</h3>
+        <div class="row g-4">
+            {% for related in related_spots %}
+            <div class="col-md-3">
+                <div class="card h-100 shadow-sm">
+                    {% if related.cover_image %}
+                    <img src="{{ related.cover_image.url }}" class="card-img-top" alt="{{ related.name }}" style="height: 150px; object-fit: cover;">
+                    {% else %}
+                    <img src="https://placehold.co/300x150/3498DB/FFFFFF?text={{ related.name }}" class="card-img-top" alt="{{ related.name }}" style="height: 150px; object-fit: cover;">
+                    {% endif %}
+                    <div class="card-body">
+                        <h6 class="card-title">{{ related.name }}</h6>
+                        <p class="card-text small text-muted">¥{{ related.ticket_price }} / 人</p>
+                    </div>
+                    <div class="card-footer bg-transparent border-0">
+                        <a href="{% url 'scenic:detail' pk=related.id %}" class="btn btn-sm btn-primary w-100">查看详情</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
 </div>
+{% else %}
+<div class="container my-5">
+    <div class="alert alert-danger text-center">
+        <h4>景点不存在</h4>
+        <p>您访问的景点不存在或已被删除。</p>
+        <a href="{% url 'scenic:list' %}" class="btn btn-primary">返回景点列表</a>
+    </div>
+</div>
+{% endif %}
 {% endblock %}

@@ -1,0 +1,79 @@
+{% extends "admin_panel/layout.html" %}
+{% block page_title %}数据看板{% endblock %}
+{% block page_header %}管理首页{% endblock %}
+{% block menu_dashboard %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>数据概览</h1>
+        <p>
+            今日新增订单 <strong>{{ today_orders }}</strong> 单 · 累计营收
+            <strong>¥{{ total_revenue|floatformat:2 }}</strong>
+        </p>
+    </div>
+    <div class="page-header-actions">
+        <!-- Django 后台已关闭 -->
+    </div>
+</div>
+
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="stat-card-icon">
+            <i class="fas fa-users"></i>
+        </div>
+        <div class="stat-card-title">总用户数</div>
+        <div class="stat-card-value">{{ total_users|default:"0" }}</div>
+        <div class="stat-card-footer">含管理员与普通用户</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon">
+            <i class="fas fa-file-invoice-dollar"></i>
+        </div>
+        <div class="stat-card-title">订单总量</div>
+        <div class="stat-card-value">{{ total_orders|default:"0" }}</div>
+        <div class="stat-card-footer">待支付 {{ pending_orders|default:"0" }} 单</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon">
+            <i class="fas fa-mountain"></i>
+        </div>
+        <div class="stat-card-title">景点数量</div>
+        <div class="stat-card-value">{{ total_scenic|default:"0" }}</div>
+        <div class="stat-card-footer">热门景点持续更新中</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon">
+            <i class="fas fa-route"></i>
+        </div>
+        <div class="stat-card-title">路线数量</div>
+        <div class="stat-card-value">{{ total_routes|default:"0" }}</div>
+        <div class="stat-card-footer">覆盖酒店 {{ total_hotels|default:"0" }} 家</div>
+    </div>
+</div>
+
+<div class="two-column">
+    <div class="rank-list">
+        <h3>热门景点 TOP5</h3>
+        {% for spot in top_spots %}
+        <div class="rank-item">
+            <strong>{{ forloop.counter }}. {{ spot.item_name }}</strong>
+            <span>{{ spot.order_count }} 笔订单</span>
+        </div>
+        {% empty %}
+        <div class="empty-state">暂无数据</div>
+        {% endfor %}
+    </div>
+    <div class="rank-list">
+        <h3>热门路线 TOP5</h3>
+        {% for route in top_routes %}
+        <div class="rank-item">
+            <strong>{{ forloop.counter }}. {{ route.item_name }}</strong>
+            <span>{{ route.order_count }} 笔订单</span>
+        </div>
+        {% empty %}
+        <div class="empty-state">暂无数据</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,283 @@
+{% extends 'common/base.html' %}
+{% load static %}
+{% load index_tags %}
+
+{% block title %}酒店详情 - 保定旅游网{% endblock %}
+
+{% block content %}
+{% if hotel %}
+<div class="container my-5">
+    <!-- 1. 头部 -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <h1>{{ hotel.name }}</h1>
+            <div class="d-flex align-items-center gap-3 mb-2">
+                {% if hotel.is_recommended %}
+                <span class="badge bg-success">推荐</span>
+                {% endif %}
+                <span class="text-warning">
+                    {% with stars=hotel.rating|stars %}
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= stars.full %}
+                                ★
+                            {% elif forloop.counter == stars.full|add:1 and stars.has_half %}
+                                ★
+                            {% else %}
+                                ☆
+                            {% endif %}
+                        {% endfor %}
+                    {% endwith %}
+                </span>
+                <span class="fw-bold">{{ hotel.rating|floatformat:1 }}</span>
+                <span class="text-muted">({{ hotel.views_count }} 次浏览)</span>
+            </div>
+            {% if hotel.address %}
+            <p class="text-muted"><i class="fas fa-map-marker-alt"></i> {{ hotel.address }}</p>
+            {% endif %}
+            {% if hotel.phone %}
+            <p class="text-muted"><i class="fas fa-phone"></i> {{ hotel.phone }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row g-5">
+        <!-- 2. 左侧：图文区 + 详情 -->
+        <div class="col-lg-8">
+            <!-- 封面图 -->
+            <section class="mb-4">
+                {% if hotel.cover_image %}
+                <img src="{{ hotel.cover_image.url }}" class="img-fluid rounded shadow-sm w-100" alt="{{ hotel.name }}" style="height: 400px; object-fit: cover;">
+                {% else %}
+                <img src="https://placehold.co/800x400/10b981/FFFFFF?text={{ hotel.name }}" class="img-fluid rounded shadow-sm w-100" alt="{{ hotel.name }}" style="height: 400px; object-fit: cover;">
+                {% endif %}
+            </section>
+            
+            <!-- 酒店介绍 -->
+            <section class="mb-4">
+                <div class="card border-0 shadow-sm rounded-lg">
+                    <div class="card-header bg-white border-bottom-0 py-3">
+                        <h3 class="mb-0">酒店介绍</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if hotel.brief %}
+                        <div class="alert alert-info">
+                            <strong>简介：</strong>{{ hotel.brief }}
+                        </div>
+                        {% endif %}
+                        <div style="line-height: 1.8; font-size: 1.1rem;">
+                            {{ hotel.description|linebreaks }}
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 房间类型 -->
+            {% if room_types %}
+            <section class="mb-4">
+                <div class="card border-0 shadow-sm rounded-lg">
+                    <div class="card-header bg-white border-bottom-0 py-3">
+                        <h3 class="mb-0">房间类型</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            {% for room_type in room_types %}
+                            <div class="col-md-6">
+                                <div class="card h-100 shadow-sm">
+                                    {% if room_type.cover_image %}
+                                    <img src="{{ room_type.cover_image.url }}" class="card-img-top" alt="{{ room_type.name }}" style="height: 150px; object-fit: cover;">
+                                    {% endif %}
+                                    <div class="card-body">
+                                        <h6 class="card-title">{{ room_type.name }}</h6>
+                                        <p class="card-text text-danger fw-bold">¥{{ room_type.price }} / 晚</p>
+                                        <p class="card-text small">
+                                            <i class="fas fa-users"></i> 容纳 {{ room_type.capacity }} 人
+                                            {% if room_type.remaining_count > 0 %}
+                                            <span class="text-success"> | 剩余 {{ room_type.remaining_count }} 间</span>
+                                            {% else %}
+                                            <span class="text-danger"> | 已满房</span>
+                                            {% endif %}
+                                        </p>
+                                        {% if room_type.description %}
+                                        <p class="card-text small text-muted">{{ room_type.description|truncatewords:20 }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </section>
+            {% endif %}
+
+            <!-- 评价区 -->
+            <section class="mt-4">
+                <h3 class="mb-4">用户评价 
+                    {% if comments %}
+                    <small class="text-muted">({{ comments|length }})</small>
+                    {% endif %}
+                </h3>
+                
+                <!-- 评价提交表单 -->
+                {% if user.is_authenticated %}
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">发表评价</h5>
+                        <form method="post" action="{% url 'hotels:detail' pk=hotel.id %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">评分</label>
+                                <div class="rating-input d-flex align-items-center gap-2">
+                                    <select name="rating" class="form-select" style="width: auto;" required>
+                                        <option value="5" selected>5分 - 非常满意</option>
+                                        <option value="4">4分 - 满意</option>
+                                        <option value="3">3分 - 一般</option>
+                                        <option value="2">2分 - 不满意</option>
+                                        <option value="1">1分 - 非常不满意</option>
+                                    </select>
+                                    <span class="text-warning fs-5" id="ratingDisplay">★★★★★</span>
+                                </div>
+                                <script>
+                                    document.querySelector('select[name="rating"]').addEventListener('change', function() {
+                                        const rating = parseInt(this.value);
+                                        const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+                                        document.getElementById('ratingDisplay').textContent = stars;
+                                    });
+                                </script>
+                            </div>
+                            <div class="mb-3">
+                                <label for="commentContent" class="form-label fw-bold">评价内容</label>
+                                <textarea class="form-control" id="commentContent" name="content" rows="4" placeholder="分享您的住宿体验..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">提交评价</button>
+                        </form>
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-info mb-4">
+                    <a href="{% url 'users:login' %}">登录</a>后即可发表评价
+                </div>
+                {% endif %}
+                
+                <!-- 评价列表 -->
+                {% if comments %}
+                <div class="list-group shadow-sm">
+                    {% for comment in comments %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between mb-2">
+                            <div class="d-flex align-items-center">
+                                {% if comment.user.avatar %}
+                                <img src="{{ comment.user.avatar.url }}" class="rounded-circle me-2" alt="avatar" style="width: 40px; height: 40px; object-fit: cover;">
+                                {% else %}
+                                <img src="https://placehold.co/40x40/EAF2F8/3498DB?text={{ comment.user.username|first|upper }}" class="rounded-circle me-2" alt="avatar">
+                                {% endif %}
+                                <h6 class="mb-0">{{ comment.user.username }}</h6>
+                            </div>
+                            <small class="text-muted">{{ comment.created_at|date:"Y-m-d H:i" }}</small>
+                        </div>
+                        <div class="mb-2">
+                            <span class="text-warning">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= comment.rating %}
+                                        ★
+                                    {% else %}
+                                        ☆
+                                    {% endif %}
+                                {% endfor %}
+                            </span>
+                            <span class="ms-2 fw-bold">{{ comment.rating }}分</span>
+                        </div>
+                        <p class="mb-1">{{ comment.content|linebreaks }}</p>
+                        {% if comment.get_images_list %}
+                        <div class="mt-2">
+                            {% for img_path in comment.get_images_list %}
+                            <img src="{{ img_path }}" alt="评价图片" class="img-thumbnail me-2" style="max-width: 100px; max-height: 100px; object-fit: cover;">
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="alert alert-secondary text-center">
+                    <p class="mb-0">暂无评价，快来发表第一条评价吧！</p>
+                </div>
+                {% endif %}
+            </section>
+        </div>
+
+        <!-- 3. 右侧：预订区 -->
+        <div class="col-lg-4">
+            <div class="card sticky-top shadow rounded-lg" style="top: 20px;">
+                <div class="card-header bg-success text-white rounded-top-lg">
+                    <h4 class="mb-0">酒店预订</h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">请选择房间类型进行预订</p>
+                    {% if room_types %}
+                    <div class="list-group mb-3">
+                        {% for room_type in room_types %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ room_type.name }}</h6>
+                                    <small class="text-muted">容纳 {{ room_type.capacity }} 人</small>
+                                </div>
+                                <div class="text-end">
+                                    <strong class="text-danger">¥{{ room_type.price }}</strong>
+                                    <br>
+                                    <small class="text-muted">/ 晚</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <p class="mb-0">暂无可用房间</p>
+                    </div>
+                    {% endif %}
+                    <a href="{% url 'orders:confirm' %}?item_id={{ hotel.id }}&item_type=hotel" class="btn btn-success btn-lg w-100">立即预订</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 相关酒店推荐 -->
+    {% if related_hotels %}
+    <section class="mt-5">
+        <h3 class="mb-4">相关酒店推荐</h3>
+        <div class="row g-4">
+            {% for related in related_hotels %}
+            <div class="col-md-3">
+                <div class="card h-100 shadow-sm">
+                    {% if related.cover_image %}
+                    <img src="{{ related.cover_image.url }}" class="card-img-top" alt="{{ related.name }}" style="height: 150px; object-fit: cover;">
+                    {% else %}
+                    <img src="https://placehold.co/300x150/10b981/FFFFFF?text={{ related.name }}" class="card-img-top" alt="{{ related.name }}" style="height: 150px; object-fit: cover;">
+                    {% endif %}
+                    <div class="card-body">
+                        <h6 class="card-title">{{ related.name }}</h6>
+                        <p class="card-text small text-muted">{{ related.address|truncatewords:8 }}</p>
+                    </div>
+                    <div class="card-footer bg-transparent border-0">
+                        <a href="{% url 'hotels:detail' pk=related.id %}" class="btn btn-sm btn-outline-success w-100">查看详情</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+{% else %}
+<div class="container my-5">
+    <div class="alert alert-danger text-center">
+        <h4>酒店不存在</h4>
+        <p>您访问的酒店不存在或已被删除。</p>
+        <a href="{% url 'hotels:list' %}" class="btn btn-primary">返回酒店列表</a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+

@@ -1,0 +1,199 @@
+{% extends 'common/base.html' %}
+{% load static %}
+{% load index_tags %}
+
+{% block title %}搜索结果 - 保定旅游网{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-3">
+                <i class="fas fa-search text-primary me-2"></i>搜索结果
+            </h2>
+            {% if search_query %}
+            <p class="text-muted">关键词：<strong>"{{ search_query }}"</strong> 共找到 <strong>{{ total_count }}</strong> 条结果</p>
+            {% else %}
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>请输入搜索关键词
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if search_query %}
+    <!-- 景点结果 -->
+    {% if scenic_results %}
+    <section class="mb-5">
+        <h4 class="mb-3">
+            <i class="fas fa-mountain text-primary me-2"></i>景点 ({{ scenic_results.count }})
+        </h4>
+        <div class="row g-4">
+            {% for spot in scenic_results %}
+            <div class="col-md-6 col-lg-3">
+                <div class="card h-100 border-0 shadow-sm">
+                    <a href="{% url 'scenic:detail' pk=spot.id %}" style="text-decoration: none; display: block; overflow: hidden;">
+                        {% if spot.cover_image %}
+                        <img src="{{ spot.cover_image.url }}" class="card-img-top" alt="{{ spot.name }}" style="height: 180px; object-fit: cover; cursor: pointer;">
+                        {% else %}
+                        <img src="https://placehold.co/400x300/eee/666?text={{ spot.name }}" class="card-img-top" alt="{{ spot.name }}" style="height: 180px; object-fit: cover; cursor: pointer;">
+                        {% endif %}
+                    </a>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ spot.name }}</h5>
+                        <p class="card-text small text-muted">
+                            <span class="text-warning">
+                                {% with stars=spot.rating|stars %}
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= stars.full %}★{% elif forloop.counter == stars.full|add:1 and stars.has_half %}★{% else %}☆{% endif %}
+                                    {% endfor %}
+                                {% endwith %}
+                            </span>
+                            {{ spot.rating|floatformat:1 }}
+                        </p>
+                        {% if spot.ticket_price %}
+                        <p class="card-text text-danger fw-bold small">¥{{ spot.ticket_price }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer bg-transparent border-0 pb-3">
+                        <a href="{% url 'scenic:detail' pk=spot.id %}" class="btn btn-primary btn-sm w-100">查看详情</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- 路线结果 -->
+    {% if route_results %}
+    <section class="mb-5">
+        <h4 class="mb-3">
+            <i class="fas fa-route text-success me-2"></i>路线 ({{ route_results.count }})
+        </h4>
+        <div class="row g-4">
+            {% for route in route_results %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <a href="{% url 'routes:detail' pk=route.id %}" style="text-decoration: none; display: block; overflow: hidden;">
+                        {% if route.cover_image %}
+                        <img src="{{ route.cover_image.url }}" class="card-img-top" alt="{{ route.name }}" style="height: 180px; object-fit: cover; cursor: pointer;">
+                        {% else %}
+                        <img src="https://placehold.co/400x300/dfd/666?text={{ route.name }}" class="card-img-top" alt="{{ route.name }}" style="height: 180px; object-fit: cover; cursor: pointer;">
+                        {% endif %}
+                    </a>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ route.name }}</h5>
+                        <p class="card-text text-danger fw-bold">¥{{ route.price }} 起 / {{ route.days }}天</p>
+                        {% if route.rating %}
+                        <p class="card-text small">
+                            <span class="text-warning">
+                                {% with stars=route.rating|stars %}
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= stars.full %}★{% elif forloop.counter == stars.full|add:1 and stars.has_half %}★{% else %}☆{% endif %}
+                                    {% endfor %}
+                                {% endwith %}
+                            </span>
+                            {{ route.rating|floatformat:1 }}
+                        </p>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer bg-transparent border-0 pb-3">
+                        <a href="{% url 'routes:detail' pk=route.id %}" class="btn btn-outline-primary btn-sm w-100">查看详情</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- 酒店结果 -->
+    {% if hotel_results %}
+    <section class="mb-5">
+        <h4 class="mb-3">
+            <i class="fas fa-hotel text-warning me-2"></i>酒店 ({{ hotel_results.count }})
+        </h4>
+        <div class="row g-4">
+            {% for hotel in hotel_results %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <a href="{% url 'hotels:detail' pk=hotel.id %}" style="text-decoration: none; display: block; overflow: hidden;">
+                        {% if hotel.cover_image %}
+                        <img src="{{ hotel.cover_image.url }}" class="card-img-top" alt="{{ hotel.name }}" style="height: 180px; object-fit: cover; cursor: pointer;">
+                        {% else %}
+                        <img src="https://placehold.co/400x300/eee/666?text={{ hotel.name }}" class="card-img-top" alt="{{ hotel.name }}" style="height: 180px; object-fit: cover; cursor: pointer;">
+                        {% endif %}
+                    </a>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ hotel.name }}</h5>
+                        <p class="card-text text-muted small">
+                            <i class="fas fa-map-marker-alt"></i> {{ hotel.address|truncatewords:8 }}
+                        </p>
+                        <p class="card-text">
+                            <span class="text-warning">
+                                {% with stars=hotel.rating|stars %}
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= stars.full %}★{% elif forloop.counter == stars.full|add:1 and stars.has_half %}★{% else %}☆{% endif %}
+                                    {% endfor %}
+                                {% endwith %}
+                            </span>
+                            {{ hotel.rating|floatformat:1 }}
+                        </p>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 pb-3">
+                        <a href="{% url 'hotels:detail' pk=hotel.id %}" class="btn btn-primary btn-sm w-100">查看详情</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- 资讯结果 -->
+    {% if news_results %}
+    <section class="mb-5">
+        <h4 class="mb-3">
+            <i class="fas fa-newspaper text-info me-2"></i>资讯 ({{ news_results.count }})
+        </h4>
+        <div class="list-group">
+            {% for news in news_results %}
+            <a href="{% url 'news:detail' pk=news.id %}" class="list-group-item list-group-item-action">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">{{ news.title }}</h5>
+                    <small>{{ news.published_at|date:"Y-m-d" }}</small>
+                </div>
+                {% if news.abstract %}
+                <p class="mb-1 text-muted">{{ news.abstract|truncatewords:30 }}</p>
+                {% endif %}
+                <small class="text-muted">
+                    {% if news.category %}{{ news.category.name }} | {% endif %}
+                    阅读量 {{ news.views_count }}
+                </small>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- 无结果提示 -->
+    {% if total_count == 0 %}
+    <div class="text-center py-5">
+        <i class="fas fa-search fa-4x text-muted mb-3"></i>
+        <h4 class="text-muted">未找到相关结果</h4>
+        <p class="text-muted">请尝试使用其他关键词搜索</p>
+        <a href="{% url 'index:index' %}" class="btn btn-primary mt-3">返回首页</a>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-search fa-4x text-muted mb-3"></i>
+        <h4 class="text-muted">请输入搜索关键词</h4>
+        <a href="{% url 'index:index' %}" class="btn btn-primary mt-3">返回首页</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

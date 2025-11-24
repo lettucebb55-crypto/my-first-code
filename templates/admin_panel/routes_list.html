@@ -1,0 +1,135 @@
+{% extends "admin_panel/layout.html" %}
+{% block page_title %}路线管理{% endblock %}
+{% block page_header %}路线管理{% endblock %}
+{% block menu_routes %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>路线列表</h1>
+        <p>共 {{ paginator.count }} 条旅游路线，支持快速查询和维护。</p>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'admin_panel:route_add' %}" class="btn-primary">
+            <i class="fas fa-plus"></i> 新增路线
+        </a>
+    </div>
+</div>
+
+<form method="get" id="searchForm" class="filter-panel">
+    <div class="field">
+        <label for="search">关键字</label>
+        <input id="search" type="text" name="search" placeholder="路线名称 / 行程亮点" value="{{ search }}">
+    </div>
+    <div class="field">
+        <label for="category">路线分类</label>
+        <select id="category" name="category">
+            <option value="">全部分类</option>
+            {% for cat in categories %}
+            <option value="{{ cat.id }}" {% if category_id == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="field" style="min-width: auto;">
+        <label style="visibility:hidden;">搜索</label>
+        <button type="submit">
+            <i class="fas fa-search"></i> 筛选
+        </button>
+    </div>
+</form>
+
+<div class="datatable">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>路线名称</th>
+                <th>分类</th>
+                <th>价格</th>
+                <th>天数</th>
+                <th style="text-align:center;">操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for route in page_obj %}
+            <tr>
+                <td>{{ route.id }}</td>
+                <td>
+                    <div class="cell-multi">
+                        <a href="{% url 'admin_panel:route_edit' route.id %}">{{ route.name }}</a>
+                        <span class="cell-meta">{{ route.itinerary_summary|default:"暂无简介" }}</span>
+                    </div>
+                </td>
+                <td>{{ route.category.name|default:"-" }}</td>
+                <td>¥{{ route.price }}</td>
+                <td>{{ route.days }} 天</td>
+                <td>
+                    <div class="actions">
+                        <a href="{% url 'admin_panel:route_edit' route.id %}" class="btn-action btn-edit">
+                            <i class="fas fa-pen"></i> 编辑
+                        </a>
+                        <a href="{% url 'admin_panel:route_delete' route.id %}" class="btn-action btn-delete" onclick="return confirm('确定删除该路线？')">
+                            <i class="fas fa-trash-alt"></i> 删除
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="empty-state">暂无数据</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="pagination-wrapper">
+    <div class="pagination-info">
+        共 <strong>{{ paginator.count }}</strong> 条
+        <select onchange="location.href='?page=1&search={{ search }}&category={{ category_id }}&per_page=' + this.value">
+            <option value="10" {% if per_page == 10 %}selected{% endif %}>10条/页</option>
+            <option value="20" {% if per_page == 20 %}selected{% endif %}>20条/页</option>
+            <option value="50" {% if per_page == 50 %}selected{% endif %}>50条/页</option>
+        </select>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&search={{ search }}&category={{ category_id }}&per_page={{ per_page }}">&lt;</a></li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">&lt;</span></li>
+            {% endif %}
+
+            {% for num in paginator.page_range %}
+                {% if num == page_obj.number %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item"><a class="page-link" href="?page={{ num }}&search={{ search }}&category={{ category_id }}&per_page={{ per_page }}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&search={{ search }}&category={{ category_id }}&per_page={{ per_page }}">&gt;</a></li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">&gt;</span></li>
+            {% endif %}
+        </ul>
+        <input type="number" class="page-input" id="goToPage" placeholder="1" min="1" max="{{ paginator.num_pages }}">
+        <button class="btn-go" onclick="goToPage()">跳转</button>
+    </div>
+</div>
+
+<script>
+function goToPage() {
+    const page = document.getElementById('goToPage').value;
+    if (page && page >= 1 && page <= {{ paginator.num_pages }}) {
+        const params = new URLSearchParams(window.location.search);
+        params.set('page', page);
+        params.set('search', "{{ search|escapejs }}");
+        params.set('category', "{{ category_id|escapejs }}");
+        params.set('per_page', "{{ per_page }}");
+        window.location.search = params.toString();
+    }
+}
+</script>
+{% endblock %}

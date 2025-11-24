@@ -1,0 +1,152 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+/* 完全隐藏Django默认的dashboard内容 */
+body.app-index #content-main,
+body.app-index .dashboard .module,
+body.app-index .dashboard table {
+    display: none !important;
+}
+
+body.app-index #content {
+    margin-left: 220px;
+    padding: 20px;
+}
+
+.admin-sidebar {
+    position: fixed;
+    top: 40px;
+    left: 0;
+    bottom: 0;
+    width: 220px;
+    background: #2f3e4d;
+    padding: 12px 8px;
+    overflow-y: auto;
+    z-index: 100;
+}
+
+.admin-sidebar .nav-section {
+    margin-bottom: 16px;
+}
+
+.admin-sidebar .nav-section-title {
+    color: #9fb3c8;
+    font-size: 12px;
+    padding: 6px 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.admin-sidebar .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #e6edf5;
+    text-decoration: none;
+    padding: 8px 10px;
+    border-radius: 4px;
+    font-size: 13px;
+    transition: background-color 0.2s;
+}
+
+.admin-sidebar .nav-item i {
+    width: 16px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.admin-sidebar .nav-item:hover,
+.admin-sidebar .nav-item.active {
+    background: #3b4b5d;
+}
+
+/* 主内容 */
+.dashboard-simple {
+    background: #ffffff;
+    border: 1px solid #e7e9ee;
+    border-radius: 4px;
+    padding: 20px;
+    margin-top: 0;
+}
+
+.dashboard-simple h1 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 8px 0;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e7e9ee;
+}
+
+.dashboard-simple p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 14px;
+}
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block content %}
+<!-- 左侧分组导航 -->
+<div class="admin-sidebar">
+    <div class="nav-section">
+        <div class="nav-section-title">站点</div>
+        <span class="nav-item" style="opacity: 0.5; cursor: not-allowed;" title="Django 后台已关闭"><i class="fas fa-home"></i><span>首页</span></span>
+    </div>
+
+    <div class="nav-section">
+        <div class="nav-section-title">NEWS</div>
+        <span class="nav-item" style="opacity: 0.5; cursor: not-allowed;" title="Django 后台已关闭"><i class="fas fa-newspaper"></i><span>旅游资讯</span></span>
+        <span class="nav-item" style="opacity: 0.5; cursor: not-allowed;" title="Django 后台已关闭"><i class="fas fa-folder"></i><span>资讯分类</span></span>
+        <span class="nav-item" style="opacity: 0.5; cursor: not-allowed;" title="Django 后台已关闭"><i class="fas fa-comments"></i><span>资讯评论</span></span>
+    </div>
+
+    <div class="nav-section">
+        <div class="nav-section-title">ORDERS</div>
+        <span class="nav-item" style="opacity: 0.5; cursor: not-allowed;" title="Django 后台已关闭"><i class="fas fa-shopping-cart"></i><span>订单</span></span>
+        <span class="nav-item" style="opacity: 0.5; cursor: not-allowed;" title="Django 后台已关闭"><i class="fas fa-list"></i><span>订单明细</span></span>
+    </div>
+
+    <div class="nav-section">
+        <div class="nav-section-title">ROUTES</div>
+        <span class="nav-item" style="opacity: 0.5; cursor: not-allowed;" title="Django 后台已关闭"><i class="fas fa-route"></i><span>旅游路线</span></span>
+        <span class="nav-item" style="opacity: 0.5; cursor: not-allowed;" title="Django 后台已关闭"><i class="fas fa-folder"></i><span>路线分类</span></span>
+    </div>
+
+    <div class="nav-section">
+        <div class="nav-section-title">SCENIC</div>
+        <span class="nav-item" style="opacity: 0.5; cursor: not-allowed;" title="Django 后台已关闭"><i class="fas fa-mountain"></i><span>景点</span></span>
+        <span class="nav-item" style="opacity: 0.5; cursor: not-allowed;" title="Django 后台已关闭"><i class="fas fa-folder"></i><span>景点分类</span></span>
+    </div>
+
+    <div class="nav-section">
+        <div class="nav-section-title">HOTELS</div>
+        <span class="nav-item" style="opacity: 0.5; cursor: not-allowed;" title="Django 后台已关闭"><i class="fas fa-hotel"></i><span>酒店</span></span>
+        <span class="nav-item" style="opacity: 0.5; cursor: not-allowed;" title="Django 后台已关闭"><i class="fas fa-bed"></i><span>房间类型</span></span>
+    </div>
+
+    <div class="nav-section">
+        <div class="nav-section-title">COMMENTS</div>
+        <span class="nav-item" style="opacity: 0.5; cursor: not-allowed;" title="Django 后台已关闭"><i class="fas fa-comment-dots"></i><span>评论</span></span>
+    </div>
+
+    <div class="nav-section">
+        <div class="nav-section-title">USERS</div>
+        <span class="nav-item" style="opacity: 0.5; cursor: not-allowed;" title="Django 后台已关闭"><i class="fas fa-users"></i><span>用户</span></span>
+        <span class="nav-item" style="opacity: 0.5; cursor: not-allowed;" title="Django 后台已关闭"><i class="fas fa-heart"></i><span>收藏</span></span>
+    </div>
+</div>
+
+<!-- 简洁主内容 -->
+<div class="dashboard-simple">
+    <h1>站点管理</h1>
+    <div style="font-size: 16px; font-weight: 600; color: #111827; margin: 12px 0 8px 0;">管理首页</div>
+    <p>从左侧选择一个模块进行管理。</p>
+</div>
+{% endblock %}

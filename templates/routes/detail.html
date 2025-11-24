@@ -1,21 +1,50 @@
 {% extends 'common/base.html' %}
 {% load static %}
+{% load index_tags %}
 
 {% block content %}
+{% if route %}
 <div class="container my-5">
     <!-- 1. 头部 -->
     <div class="row mb-4">
         <div class="col-lg-8">
-            <h1>保定历史文化2日游 (古莲花池+总督署)</h1>
-            <p class="text-muted">
-                <span class="badge bg-success-light text-success-dark me-2">历史文化</span>
-                <span class="badge bg-info-light text-info-dark me-2">2日游</span>
-            </p>
+            <h1>{{ route.name }}</h1>
+            <div class="d-flex align-items-center gap-3 mb-2">
+                {% if route.category %}
+                <span class="badge bg-success me-2">{{ route.category.name }}</span>
+                {% endif %}
+                <span class="badge bg-info me-2">{{ route.days }}日游</span>
+                {% if route.rating %}
+                <span class="text-warning">
+                    {% with stars=route.rating|stars %}
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= stars.full %}
+                                ★
+                            {% elif forloop.counter == stars.full|add:1 and stars.has_half %}
+                                ★
+                            {% else %}
+                                ☆
+                            {% endif %}
+                        {% endfor %}
+                    {% endwith %}
+                </span>
+                <span class="fw-bold">{{ route.rating|floatformat:1 }}</span>
+                {% endif %}
+                <span class="text-muted">({{ route.views_count }} 次浏览 / {{ route.sales_count }} 人报名)</span>
+            </div>
+            {% if route.departure_city %}
+            <p class="text-muted"><i class="fas fa-map-marker-alt"></i> 出发城市：{{ route.departure_city }}</p>
+            {% endif %}
+            {% if route.meeting_point %}
+            <p class="text-muted"><i class="fas fa-location-dot"></i> 集合地点：{{ route.meeting_point }}</p>
+            {% endif %}
         </div>
         <div class="col-lg-4 text-lg-end">
-             <button class="btn btn-outline-danger" id="favoriteButton">
+            {% if user.is_authenticated %}
+            <button class="btn btn-outline-danger" id="favoriteButton" data-route-id="{{ route.id }}" data-route-type="route">
                 <i class="far fa-heart"></i> 收藏
             </button>
+            {% endif %}
         </div>
     </div>
 
@@ -24,8 +53,26 @@
         <div class="col-lg-8">
             <!-- 封面图 -->
             <section class="mb-4">
-                <img src="https://placehold.co/800x400/2ECC71/FFFFFF?text=保定2日游" class="img-fluid rounded shadow-sm" alt="路线封面">
+                {% if route.cover_image %}
+                <img src="{{ route.cover_image.url }}" class="img-fluid rounded shadow-sm w-100" alt="{{ route.name }}" style="height: 400px; object-fit: cover;">
+                {% else %}
+                <img src="https://placehold.co/800x400/2ECC71/FFFFFF?text={{ route.name }}" class="img-fluid rounded shadow-sm w-100" alt="{{ route.name }}" style="height: 400px; object-fit: cover;">
+                {% endif %}
             </section>
+            
+            <!-- 行程概览 -->
+            {% if route.itinerary_summary %}
+            <section class="mb-4">
+                <div class="card border-0 shadow-sm rounded-lg">
+                    <div class="card-header bg-white border-bottom-0 py-3">
+                        <h3 class="mb-0">行程概览</h3>
+                    </div>
+                    <div class="card-body">
+                        <p style="line-height: 1.8; font-size: 1.1rem;">{{ route.itinerary_summary|linebreaks }}</p>
+                    </div>
+                </div>
+            </section>
+            {% endif %}
 
             <!-- Tab 导航 (行程安排, 费用, 须知) -->
             <section>
@@ -41,63 +88,164 @@
                     </li>
                  </ul>
 
-                 <div class="tab-content p-3 border border-top-0 rounded-bottom">
+                 <div class="tab-content p-3 border border-top-0 rounded-bottom shadow-sm">
                     <!-- 每日行程 -->
                     <div class="tab-pane fade show active" id="itinerary" role="tabpanel">
+                        {% if itineraries %}
                         <div class="accordion" id="itineraryAccordion">
-                            <!-- Day 1 -->
+                            {% for itinerary in itineraries %}
                             <div class="accordion-item">
-                                <h2 class="accordion-header" id="day1-heading">
-                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#day1-collapse" aria-expanded="true">
-                                        Day 1: 古莲花池 -> 直隶总督署
+                                <h2 class="accordion-header" id="day{{ itinerary.day_number }}-heading">
+                                    <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#day{{ itinerary.day_number }}-collapse" {% if forloop.first %}aria-expanded="true"{% endif %}>
+                                        第{{ itinerary.day_number }}天：{{ itinerary.title }}
                                     </button>
                                 </h2>
-                                <div id="day1-collapse" class="accordion-collapse collapse show" data-bs-parent="#itineraryAccordion">
+                                <div id="day{{ itinerary.day_number }}-collapse" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" data-bs-parent="#itineraryAccordion">
                                     <div class="accordion-body">
-                                        <p><strong>上午：</strong>游览古莲花池...</p>
-                                        <p><strong>下午：</strong>参观直隶总督署...</p>
-                                        <p><strong>住宿：</strong>保定市区酒店</p>
+                                        <div style="line-height: 1.8;">{{ itinerary.description|linebreaks }}</div>
                                     </div>
                                 </div>
                             </div>
-                            <!-- Day 2 -->
-                            <div class="accordion-item">
-                                <h2 class="accordion-header" id="day2-heading">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#day2-collapse">
-                                        Day 2: 满城汉墓
-                                    </button>
-                                </h2>
-                                <div id="day2-collapse" class="accordion-collapse collapse" data-bs-parent="#itineraryAccordion">
-                                    <div class="accordion-body">
-                                        <p><strong>上午：</strong>前往满城汉墓...</p>
-                                        <p><strong>下午：</strong>行程结束，返回。</p>
-                                    </div>
-                                </div>
-                            </div>
+                            {% endfor %}
                         </div>
+                        {% else %}
+                        <p class="text-muted">暂无详细行程安排</p>
+                        {% endif %}
                     </div>
 
                     <!-- 费用说明 -->
                     <div class="tab-pane fade" id="cost" role="tabpanel">
-                        <h5>费用包含</h5>
-                        <ul>
-                            <li>交通：往返空调大巴</li>
-                            <li>住宿：1晚市区酒店</li>
-                            <li>门票：所列景点首道门票</li>
-                        </ul>
-                        <h5>费用不含</h5>
-                        <ul>
-                            <li>餐饮：全程正餐自理</li>
-                            <li>个人消费</li>
-                        </ul>
+                        {% if route.cost_include %}
+                        <h5 class="mb-3"><i class="fas fa-check-circle text-success me-2"></i>费用包含</h5>
+                        <div style="line-height: 1.8;">{{ route.cost_include|linebreaks }}</div>
+                        {% endif %}
+                        
+                        {% if route.cost_exclude %}
+                        <h5 class="mb-3 mt-4"><i class="fas fa-times-circle text-danger me-2"></i>费用不含</h5>
+                        <div style="line-height: 1.8;">{{ route.cost_exclude|linebreaks }}</div>
+                        {% endif %}
                     </div>
 
                     <!-- 预订须知 -->
                     <div class="tab-pane fade" id="notes" role="tabpanel">
-                        <p>1. 请提前3天报名。</p>
-                        <p>2. 本路线10人成团，如未成团将提前1天通知。</p>
+                        {% if route.notes %}
+                        <div style="line-height: 1.8;">{{ route.notes|linebreaks }}</div>
+                        {% else %}
+                        <p class="text-muted">暂无预订须知</p>
+                        {% endif %}
+                        
+                        <div class="mt-4">
+                            <h6>基本信息</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-users me-2"></i> 成团人数：{{ route.group_size }}人</li>
+                                <li><i class="fas fa-calendar me-2"></i> 报名截止：{{ route.deadline|date:"Y-m-d" }}</li>
+                                {% if route.tags %}
+                                <li class="mt-2">
+                                    <i class="fas fa-tags me-2"></i> 特色标签：
+                                    {% for tag in route.get_tags_list %}
+                                    <span class="badge bg-info me-1">{{ tag }}</span>
+                                    {% endfor %}
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </div>
                     </div>
                  </div>
+            </section>
+
+            <!-- 评价区 -->
+            <section class="mt-4">
+                <h3 class="mb-4">用户评价 
+                    {% if comments %}
+                    <small class="text-muted">({{ comments|length }})</small>
+                    {% endif %}
+                </h3>
+                
+                <!-- 评价提交表单 -->
+                {% if user.is_authenticated %}
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">发表评价</h5>
+                        <form method="post" action="{% url 'routes:detail' pk=route.id %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">评分</label>
+                                <div class="rating-input d-flex align-items-center gap-2">
+                                    <select name="rating" class="form-select" style="width: auto;" required>
+                                        <option value="5" selected>5分 - 非常满意</option>
+                                        <option value="4">4分 - 满意</option>
+                                        <option value="3">3分 - 一般</option>
+                                        <option value="2">2分 - 不满意</option>
+                                        <option value="1">1分 - 非常不满意</option>
+                                    </select>
+                                    <span class="text-warning fs-5" id="ratingDisplay">★★★★★</span>
+                                </div>
+                                <script>
+                                    document.querySelector('select[name="rating"]').addEventListener('change', function() {
+                                        const rating = parseInt(this.value);
+                                        const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+                                        document.getElementById('ratingDisplay').textContent = stars;
+                                    });
+                                </script>
+                            </div>
+                            <div class="mb-3">
+                                <label for="commentContent" class="form-label fw-bold">评价内容</label>
+                                <textarea class="form-control" id="commentContent" name="content" rows="4" placeholder="分享您的路线体验..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">提交评价</button>
+                        </form>
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-info mb-4">
+                    <a href="{% url 'users:login' %}">登录</a>后即可发表评价
+                </div>
+                {% endif %}
+                
+                <!-- 评价列表 -->
+                {% if comments %}
+                <div class="list-group shadow-sm">
+                    {% for comment in comments %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between mb-2">
+                            <div class="d-flex align-items-center">
+                                {% if comment.user.avatar %}
+                                <img src="{{ comment.user.avatar.url }}" class="rounded-circle me-2" alt="avatar" style="width: 40px; height: 40px; object-fit: cover;">
+                                {% else %}
+                                <img src="https://placehold.co/40x40/EAF2F8/3498DB?text={{ comment.user.username|first|upper }}" class="rounded-circle me-2" alt="avatar">
+                                {% endif %}
+                                <h6 class="mb-0">{{ comment.user.username }}</h6>
+                            </div>
+                            <small class="text-muted">{{ comment.created_at|date:"Y-m-d H:i" }}</small>
+                        </div>
+                        <div class="mb-2">
+                            <span class="text-warning">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= comment.rating %}
+                                        ★
+                                    {% else %}
+                                        ☆
+                                    {% endif %}
+                                {% endfor %}
+                            </span>
+                            <span class="ms-2 fw-bold">{{ comment.rating }}分</span>
+                        </div>
+                        <p class="mb-1">{{ comment.content|linebreaks }}</p>
+                        {% if comment.get_images_list %}
+                        <div class="mt-2">
+                            {% for img_path in comment.get_images_list %}
+                            <img src="{{ img_path }}" alt="评价图片" class="img-thumbnail me-2" style="max-width: 100px; max-height: 100px; object-fit: cover;">
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="alert alert-secondary text-center">
+                    <p class="mb-0">暂无评价，快来发表第一条评价吧！</p>
+                </div>
+                {% endif %}
             </section>
         </div>
 
@@ -108,28 +256,34 @@
                     <h4 class="mb-0">路线报名</h4>
                 </div>
                 <div class="card-body">
-                    <h5 class="text-danger display-6">¥500.00 <span class="fs-6 text-muted">/人</span></h5>
+                    <h5 class="text-danger display-6">¥{{ route.price }} <span class="fs-6 text-muted">/人起</span></h5>
                     <ul class="list-unstyled text-muted">
-                        <li><i class="fas fa-check-circle text-success me-2"></i> 10人成团</li>
-                        <li><i class="fas fa-calendar-alt text-success me-2"></i> 需提前3天报名</li>
+                        <li><i class="fas fa-users text-success me-2"></i> {{ route.group_size }}人成团</li>
+                        <li><i class="fas fa-calendar-alt text-success me-2"></i> 需提前{{ route.deadline|timeuntil|truncatewords:1 }}报名</li>
+                        <li><i class="fas fa-clock text-success me-2"></i> {{ route.days }}天行程</li>
                     </ul>
                     <hr>
                     <form id="bookingForm" action="{% url 'orders:confirm' %}" method="GET">
+                        <input type="hidden" name="item_id" value="{{ route.id }}">
+                        <input type="hidden" name="item_type" value="route">
+                        
                         <div class="mb-3">
                             <label for="bookingDate" class="form-label fw-bold">选择出行日期</label>
-                            <input type="date" class="form-control" id="bookingDate" required>
+                            <input type="date" class="form-control" id="bookingDate" name="booking_date" min="{{ route.deadline|date:'Y-m-d' }}" required>
+                            <small class="text-muted">报名截止：{{ route.deadline|date:"Y-m-d" }}</small>
                         </div>
                         <div class="mb-3">
                             <label for="bookingCount" class="form-label fw-bold">参与人数</label>
-                            <input type="number" class="form-control" id="bookingCount" value="1" min="1" required>
+                            <input type="number" class="form-control" id="bookingCount" name="quantity" value="1" min="1" max="{{ route.group_size }}" required>
+                            <small class="text-muted">最多{{ route.group_size }}人</small>
                         </div>
                         <div class="mb-3">
                             <label for="contactName" class="form-label fw-bold">联系人姓名</label>
-                            <input type="text" class="form-control" id="contactName" placeholder="请输入姓名" required>
+                            <input type="text" class="form-control" id="contactName" name="contact_name" placeholder="请输入姓名" required>
                         </div>
                         <div class="mb-3">
                             <label for="contactPhone" class="form-label fw-bold">联系人手机</label>
-                            <input type="tel" class="form-control" id="contactPhone" placeholder="请输入11位手机号" required>
+                            <input type="tel" class="form-control" id="contactPhone" name="contact_phone" placeholder="请输入11位手机号" pattern="[0-9]{11}" required>
                         </div>
                         <button type="submit" class="btn btn-danger btn-lg w-100">立即报名</button>
                     </form>
@@ -137,5 +291,59 @@
             </div>
         </div>
     </div>
+    
+    <!-- 相关路线推荐 -->
+    {% if related_routes %}
+    <section class="mt-5">
+        <h3 class="mb-4">相关路线推荐</h3>
+        <div class="row g-4">
+            {% for related in related_routes %}
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm">
+                    {% if related.cover_image %}
+                    <img src="{{ related.cover_image.url }}" class="card-img-top" alt="{{ related.name }}" style="height: 200px; object-fit: cover;">
+                    {% else %}
+                    <img src="https://placehold.co/400x200/2ECC71/FFFFFF?text={{ related.name }}" class="card-img-top" alt="{{ related.name }}" style="height: 200px; object-fit: cover;">
+                    {% endif %}
+                    <div class="card-body">
+                        <h6 class="card-title">{{ related.name }}</h6>
+                        <p class="card-text text-danger fw-bold">¥{{ related.price }} / {{ related.days }}天</p>
+                        {% if related.rating %}
+                        <p class="card-text small">
+                            <span class="text-warning">
+                                {% with stars=related.rating|stars %}
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= stars.full %}
+                                            ★
+                                        {% elif forloop.counter == stars.full|add:1 and stars.has_half %}
+                                            ★
+                                        {% else %}
+                                            ☆
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endwith %}
+                            </span>
+                            {{ related.rating|floatformat:1 }}
+                        </p>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer bg-transparent border-0">
+                        <a href="{% url 'routes:detail' pk=related.id %}" class="btn btn-sm btn-outline-success w-100">查看详情</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
 </div>
+{% else %}
+<div class="container my-5">
+    <div class="alert alert-danger text-center">
+        <h4>路线不存在</h4>
+        <p>您访问的路线不存在或已被删除。</p>
+        <a href="{% url 'routes:list' %}" class="btn btn-primary">返回路线列表</a>
+    </div>
+</div>
+{% endif %}
 {% endblock %}

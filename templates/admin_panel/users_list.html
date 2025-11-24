@@ -1,0 +1,140 @@
+{% extends "admin_panel/layout.html" %}
+{% block page_title %}用户信息{% endblock %}
+{% block page_header %}用户信息{% endblock %}
+{% block menu_users %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>用户列表</h1>
+        <p>共 {{ paginator.count }} 位注册用户，可按角色快速筛选。</p>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'admin_panel:user_add' %}" class="btn-secondary">
+            <i class="fas fa-user-plus"></i> 创建账号
+        </a>
+    </div>
+</div>
+
+<form method="get" id="searchForm" class="filter-panel">
+    <div class="field">
+        <label for="search">关键字</label>
+        <input id="search" type="text" name="search" placeholder="用户名 / 邮箱 / 手机号" value="{{ search }}">
+    </div>
+    <div class="field">
+        <label for="type">账号类型</label>
+        <select id="type" name="type">
+            <option value="">全部类型</option>
+            <option value="staff" {% if account_type == 'staff' %}selected{% endif %}>管理员</option>
+            <option value="user" {% if account_type == 'user' %}selected{% endif %}>普通用户</option>
+        </select>
+    </div>
+    <div class="field" style="min-width:auto;">
+        <label style="visibility:hidden;">搜索</label>
+        <button type="submit">
+            <i class="fas fa-search"></i> 筛选
+        </button>
+    </div>
+</form>
+
+<div class="datatable">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>用户名</th>
+                <th>邮箱</th>
+                <th>手机号</th>
+                <th>账号类型</th>
+                <th style="text-align:center;">操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in page_obj %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td>
+                    <div class="cell-multi">
+                        <a href="{% url 'admin_panel:user_edit' user.id %}">{{ user.username }}</a>
+                        <span class="cell-meta">注册于 {{ user.date_joined|date:"Y-m-d H:i" }}</span>
+                    </div>
+                </td>
+                <td>{{ user.email|default:"-" }}</td>
+                <td>{{ user.phone|default:"-" }}</td>
+                <td>
+                    {% if user.is_staff %}
+                    <span class="tag tag-blue"><i class="fas fa-shield-alt"></i> 管理员</span>
+                    {% else %}
+                    <span class="tag tag-green"><i class="fas fa-user"></i> 普通用户</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="actions">
+                        <a href="{% url 'admin_panel:user_edit' user.id %}" class="btn-action btn-edit">
+                            <i class="fas fa-pen"></i> 编辑
+                        </a>
+                        <a href="{% url 'admin_panel:user_delete' user.id %}" class="btn-action btn-delete" onclick="return confirm('确定删除该用户？')">
+                            <i class="fas fa-trash-alt"></i> 删除
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="empty-state">暂无数据</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="pagination-wrapper">
+    <div class="pagination-info">
+        共 <strong>{{ paginator.count }}</strong> 条
+        <select onchange="location.href='?page=1&search={{ search }}&type={{ account_type }}&per_page=' + this.value">
+            <option value="10" {% if per_page == 10 %}selected{% endif %}>10条/页</option>
+            <option value="20" {% if per_page == 20 %}selected{% endif %}>20条/页</option>
+            <option value="50" {% if per_page == 50 %}selected{% endif %}>50条/页</option>
+        </select>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&search={{ search }}&type={{ account_type }}&per_page={{ per_page }}">&lt;</a></li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">&lt;</span></li>
+            {% endif %}
+
+            {% for num in paginator.page_range %}
+                {% if num == page_obj.number %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item"><a class="page-link" href="?page={{ num }}&search={{ search }}&type={{ account_type }}&per_page={{ per_page }}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&search={{ search }}&type={{ account_type }}&per_page={{ per_page }}">&gt;</a></li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">&gt;</span></li>
+            {% endif %}
+        </ul>
+        <input type="number" class="page-input" id="goToPage" placeholder="1" min="1" max="{{ paginator.num_pages }}">
+        <button class="btn-go" onclick="goToPage()">跳转</button>
+    </div>
+</div>
+
+<script>
+function goToPage() {
+    const page = document.getElementById('goToPage').value;
+    if (page && page >= 1 && page <= {{ paginator.num_pages }}) {
+        const params = new URLSearchParams(window.location.search);
+        params.set('page', page);
+        params.set('search', "{{ search|escapejs }}");
+        params.set('type', "{{ account_type|escapejs }}");
+        params.set('per_page', "{{ per_page }}");
+        window.location.search = params.toString();
+    }
+}
+</script>
+{% endblock %}

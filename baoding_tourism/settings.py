@@ -4,8 +4,6 @@ Django settings for baoding_tourism project.
 
 from pathlib import Path
 
-from django.core.checks import templates
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -32,12 +30,15 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+
     # 自定义的应用 (按照apps/目录结构)
     'apps.users',
     'apps.scenic',
     'apps.routes',
     'apps.news',
     'apps.orders',
+    'apps.hotels',      # 酒店模块
+    'apps.comments',    # 评论模块
     'apps.admin_panel', # 自定义后台
     'apps.index',       # 用于处理首页等
 ]
@@ -129,3 +130,18 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+
+
+# --- 我们的自定义配置 ---
+
+# 登录相关配置
+LOGIN_URL = '/users/login/'  # 未登录用户访问需要登录的页面时重定向到登录页
+LOGIN_REDIRECT_URL = '/'  # 登录成功后重定向到首页
+
+# 退出登录后重定向到首页
+LOGOUT_REDIRECT_URL = '/'
+
+# 允许使用 GET 请求退出登录
+LOGOUT_ON_GET = True

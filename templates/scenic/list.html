@@ -8,17 +8,28 @@
     <div class="row">
         <!-- 筛选区 -->
         <div class="col-lg-3">
-            <div class="card rounded-lg shadow-sm mb-4">
-                <div class="card-header bg-primary text-white rounded-top-lg">
+            <div class="card border-0 shadow-lg mb-4 sticky-top" style="top: 100px;">
+                <div class="card-header text-white rounded-top-lg" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                     <h5 class="mb-0"><i class="fas fa-filter me-2"></i>景点筛选</h5>
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
                         <label for="category-filter" class="form-label fw-bold">景点分类</label>
-                        <select class="form-select rounded-pill" id="category-filter">
+                        <select class="form-select rounded-pill" id="category-filter" onchange="filterSpots()">
                             <option value="">全部分类</option>
-                            <option value="natural">自然景观</option>
-                            <option value="cultural">人文古迹</option>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}" {% if selected_category == category.id %}selected{% endif %}>{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="sort-filter" class="form-label fw-bold">排序方式</label>
+                        <select class="form-select rounded-pill" id="sort-filter" onchange="filterSpots()">
+                            <option value="display_order">默认排序</option>
+                            <option value="rating">评分最高</option>
+                            <option value="views">浏览最多</option>
+                            <option value="price_asc">价格从低到高</option>
+                            <option value="price_desc">价格从高到低</option>
                         </select>
                     </div>
                 </div>
@@ -27,19 +38,88 @@
 
         <!-- 景点列表区 -->
         <div class="col-lg-9">
-            <h3 class="mb-3">全部景点 (这是景点页)</h3>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="mb-0">
+                    <i class="fas fa-mountain text-primary me-2"></i>全部景点
+                    <small class="text-muted">(共 {{ spots.count }} 个景点)</small>
+                </h3>
+            </div>
+            {% if spots %}
             <div class="row g-4" id="spot-list-container">
-                <!-- 示例景点卡片 -->
+                {% for spot in spots %}
                 <div class="col-md-6 col-lg-4">
                     <div class="card h-100 border-0 shadow-sm rounded-lg">
-                        <img src="https://placehold.co/400x300/3498DB/FFFFFF?text=景点" class="card-img-top" alt="景点">
+                        <a href="{% url 'scenic:detail' pk=spot.id %}" style="text-decoration: none; display: block; overflow: hidden;">
+                            {% if spot.cover_image %}
+                            <img src="{{ spot.cover_image.url }}" class="card-img-top" alt="{{ spot.name }}" style="height: 200px; object-fit: cover; cursor: pointer;">
+                            {% else %}
+                            <img src="https://placehold.co/400x300/3498DB/FFFFFF?text={{ spot.name }}" class="card-img-top" alt="{{ spot.name }}" style="height: 200px; object-fit: cover; cursor: pointer;">
+                            {% endif %}
+                        </a>
                         <div class="card-body">
-                            <h5 class="card-title">这是一个景点</h5>
+                            <h5 class="card-title">{{ spot.name }}</h5>
+                            {% if spot.category %}
+                            <span class="badge bg-primary mb-2">{{ spot.category.name }}</span>
+                            {% endif %}
+                            <p class="card-text">
+                                <span class="text-warning">
+                                    {% load index_tags %}
+                                    {% with stars=spot.rating|stars %}
+                                        {% for i in "12345" %}
+                                            {% if forloop.counter <= stars.full %}
+                                                ★
+                                            {% elif forloop.counter == stars.full|add:1 and stars.has_half %}
+                                                ★
+                                            {% else %}
+                                                ☆
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endwith %}
+                                </span>
+                                {{ spot.rating|floatformat:1 }}
+                            </p>
+                            {% if spot.ticket_price %}
+                            <p class="card-text text-danger fw-bold">门票：¥{{ spot.ticket_price }}</p>
+                            {% endif %}
+                            {% if spot.tags %}
+                            <div class="mb-2">
+                                {% for tag in spot.get_tags_list|slice:":3" %}
+                                <span class="badge bg-secondary me-1">{{ tag }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer bg-transparent border-0 pb-3">
+                            <a href="{% url 'scenic:detail' pk=spot.id %}" class="btn btn-primary btn-sm w-100">查看详情</a>
                         </div>
                     </div>
                 </div>
+                {% endfor %}
             </div>
+            {% else %}
+            <div class="alert alert-info text-center">
+                <p>暂无景点数据，请稍后再来查看！</p>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
+<script>
+function filterSpots() {
+    const category = document.getElementById('category-filter').value;
+    const sort = document.getElementById('sort-filter').value;
+    const url = new URL(window.location.href);
+    if (category) {
+        url.searchParams.set('category', category);
+    } else {
+        url.searchParams.delete('category');
+    }
+    if (sort) {
+        url.searchParams.set('sort', sort);
+    } else {
+        url.searchParams.delete('sort');
+    }
+    window.location.href = url.toString();
+}
+</script>
 {% endblock %}

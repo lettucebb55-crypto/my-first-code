@@ -13,13 +13,17 @@
                 </div>
                 <div class="card-body p-5">
                     <!-- 订单详情 -->
+                    {% if item %}
                     <h5 class="mb-3">项目信息</h5>
                     <div class="card mb-3">
                         <div class="card-body">
-                            <h5 class="card-title">白洋淀门票 (示例)</h5>
-                            <p class="card-text">日期：2025-11-10</p>
-                            <p class="card-text">数量：2 人</p>
-                            <p class="card-text fw-bold">小计：¥ 200.00</p>
+                            <h5 class="card-title">{{ item.name }}</h5>
+                            {% if booking_date %}
+                            <p class="card-text">日期：{{ booking_date }}</p>
+                            {% endif %}
+                            <p class="card-text">数量：{{ quantity }} {% if item_type == 'scenic' %}人{% elif item_type == 'route' %}人{% elif item_type == 'hotel' %}间{% endif %}</p>
+                            <p class="card-text">单价：¥{{ price }}</p>
+                            <p class="card-text fw-bold">小计：¥{{ total }}</p>
                         </div>
                     </div>
 
@@ -30,11 +34,11 @@
                     <ul class="list-group mb-3">
                         <li class="list-group-item d-flex justify-content-between">
                             <span>姓名：</span>
-                            <strong>张三 (示例)</strong>
+                            <strong>{{ contact_name|default:"未填写" }}</strong>
                         </li>
                         <li class="list-group-item d-flex justify-content-between">
                             <span>手机号：</span>
-                            <strong>138****1234 (示例)</strong>
+                            <strong>{{ contact_phone|default:"未填写" }}</strong>
                         </li>
                     </ul>
 
@@ -42,12 +46,23 @@
 
                     <!-- 价格总计 -->
                     <div class="d-flex justify-content-end mb-4">
-                        <h4 class="mb-0">总计：<span class="text-danger fw-bold">¥ 200.00</span></h4>
+                        <h4 class="mb-0">总计：<span class="text-danger fw-bold">¥{{ total }}</span></h4>
                     </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <p class="mb-0">订单信息不完整，请返回重新选择。</p>
+                    </div>
+                    {% endif %}
 
                     <!-- 提交按钮 -->
-                    <form action="{% url 'orders:payment' order_sn='BD20250001' %}" method="GET"> <!-- 示例 order_sn -->
-                         <p class="text-muted small">点击“确认提交”将为您创建订单，请在30分钟内完成支付。</p>
+                    <form action="{% url 'orders:create' %}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="item_id" value="{{ item_id }}">
+                        <input type="hidden" name="item_type" value="{{ item_type }}">
+                        <input type="hidden" name="quantity" value="{{ quantity }}">
+                        <input type="hidden" name="contact_name" value="{{ contact_name }}">
+                        <input type="hidden" name="contact_phone" value="{{ contact_phone }}">
+                        <p class="text-muted small">点击"确认提交"将为您创建订单，请在30分钟内完成支付。</p>
                         <button type="submit" class="btn btn-danger btn-lg w-100">
                             确认提交并支付
                         </button>

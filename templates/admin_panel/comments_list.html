@@ -1,0 +1,180 @@
+{% extends "admin_panel/layout.html" %}
+{% block page_title %}用户评价管理{% endblock %}
+{% block page_header %}用户评价管理{% endblock %}
+{% block menu_comments %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>用户评价列表</h1>
+        <p>共 {{ paginator.count }} 条用户评价，支持查看、删除等操作。</p>
+    </div>
+    <div class="page-header-actions">
+        <!-- 评价由用户在前端提交，后台仅管理 -->
+    </div>
+</div>
+
+<form method="get" id="searchForm" class="filter-panel">
+    <div class="field">
+        <label for="search">关键字</label>
+        <input id="search" type="text" name="search" placeholder="用户名 / 邮箱 / 评价内容" value="{{ search }}">
+    </div>
+    <div class="field">
+        <label for="target_type">评价对象类型</label>
+        <select id="target_type" name="target_type">
+            <option value="">全部类型</option>
+            {% for value, label in target_type_choices %}
+            <option value="{{ value }}" {% if target_type == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="field">
+        <label for="is_deleted">删除状态</label>
+        <select id="is_deleted" name="is_deleted">
+            <option value="">全部</option>
+            <option value="false" {% if is_deleted == 'false' %}selected{% endif %}>未删除</option>
+            <option value="true" {% if is_deleted == 'true' %}selected{% endif %}>已删除</option>
+        </select>
+    </div>
+    <div class="field" style="min-width:auto;">
+        <label style="visibility:hidden;">搜索</label>
+        <button type="submit">
+            <i class="fas fa-search"></i> 筛选
+        </button>
+    </div>
+</form>
+
+<div class="datatable">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>用户</th>
+                <th>评价对象</th>
+                <th>评价内容</th>
+                <th>评分</th>
+                <th>图片</th>
+                <th>状态</th>
+                <th>评价时间</th>
+                <th style="text-align:center;">操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for comment in page_obj %}
+            <tr>
+                <td>{{ comment.id }}</td>
+                <td>
+                    <div class="cell-multi">
+                        <strong>{{ comment.user.username }}</strong>
+                        <span class="cell-meta">{{ comment.user.email|default:"-" }}</span>
+                    </div>
+                </td>
+                <td>
+                    <div class="cell-multi">
+                        <span class="tag tag-blue">{{ comment.get_target_type_display }}</span>
+                        <span class="cell-meta">ID: {{ comment.target_id }}</span>
+                    </div>
+                </td>
+                <td>
+                    <div style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ comment.content }}">
+                        {{ comment.content|truncatewords:20 }}
+                    </div>
+                </td>
+                <td>
+                    <span class="text-warning">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= comment.rating %}
+                                ★
+                            {% else %}
+                                ☆
+                            {% endif %}
+                        {% endfor %}
+                    </span>
+                    <span class="text-muted">({{ comment.rating }})</span>
+                </td>
+                <td>
+                    {% if comment.images %}
+                    <span class="tag tag-green">
+                        <i class="fas fa-image"></i> {{ comment.get_images_list|length }} 张
+                    </span>
+                    {% else %}
+                    <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if comment.is_deleted %}
+                    <span class="tag tag-red"><i class="fas fa-trash"></i> 已删除</span>
+                    {% else %}
+                    <span class="tag tag-green"><i class="fas fa-check"></i> 正常</span>
+                    {% endif %}
+                </td>
+                <td>{{ comment.created_at|date:"Y-m-d H:i" }}</td>
+                <td>
+                    <div class="actions">
+                        <a href="{% url 'admin_panel:comment_delete' comment.id %}" class="btn-action btn-delete" onclick="return confirm('确定删除该评价？')">
+                            <i class="fas fa-trash-alt"></i> 删除
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="9" class="empty-state">暂无数据</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="pagination-wrapper">
+    <div class="pagination-info">
+        共 <strong>{{ paginator.count }}</strong> 条
+        <select onchange="location.href='?page=1&search={{ search }}&target_type={{ target_type }}&is_deleted={{ is_deleted }}&per_page=' + this.value">
+            <option value="10" {% if per_page == 10 %}selected{% endif %}>10条/页</option>
+            <option value="20" {% if per_page == 20 %}selected{% endif %}>20条/页</option>
+            <option value="50" {% if per_page == 50 %}selected{% endif %}>50条/页</option>
+        </select>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&search={{ search }}&target_type={{ target_type }}&is_deleted={{ is_deleted }}&per_page={{ per_page }}">&lt;</a></li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">&lt;</span></li>
+            {% endif %}
+
+            {% for num in paginator.page_range %}
+                {% if num == page_obj.number %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item"><a class="page-link" href="?page={{ num }}&search={{ search }}&target_type={{ target_type }}&is_deleted={{ is_deleted }}&per_page={{ per_page }}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&search={{ search }}&target_type={{ target_type }}&is_deleted={{ is_deleted }}&per_page={{ per_page }}">&gt;</a></li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">&gt;</span></li>
+            {% endif %}
+        </ul>
+        <input type="number" class="page-input" id="goToPage" placeholder="1" min="1" max="{{ paginator.num_pages }}">
+        <button class="btn-go" onclick="goToPage()">跳转</button>
+    </div>
+</div>
+
+<script>
+function goToPage() {
+    const page = document.getElementById('goToPage').value;
+    if (page && page >= 1 && page <= {{ paginator.num_pages }}) {
+        const params = new URLSearchParams(window.location.search);
+        params.set('page', page);
+        params.set('search', "{{ search|escapejs }}");
+        params.set('target_type', "{{ target_type|escapejs }}");
+        params.set('is_deleted', "{{ is_deleted|escapejs }}");
+        params.set('per_page', "{{ per_page }}");
+        window.location.search = params.toString();
+    }
+}
+</script>
+{% endblock %}
+

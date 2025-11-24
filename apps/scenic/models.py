@@ -35,15 +35,33 @@ class ScenicSpot(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
 
-    # 可以添加评分字段
+    # 评分字段
     rating = models.DecimalField(max_digits=3, decimal_places=1, default=5.0, verbose_name="评分")
+    
+    # 新增字段：丰富景点信息
+    phone = models.CharField(max_length=20, blank=True, null=True, verbose_name="联系电话")
+    traffic_info = models.TextField(blank=True, null=True, verbose_name="交通信息")
+    best_season = models.CharField(max_length=50, blank=True, null=True, verbose_name="最佳游览季节")
+    visit_duration = models.CharField(max_length=50, blank=True, null=True, verbose_name="建议游览时长")
+    tags = models.CharField(max_length=200, blank=True, null=True, verbose_name="标签（用逗号分隔）")
+    views_count = models.PositiveIntegerField(default=0, verbose_name="浏览次数")
+    latitude = models.DecimalField(max_digits=10, decimal_places=7, blank=True, null=True, verbose_name="纬度")
+    longitude = models.DecimalField(max_digits=10, decimal_places=7, blank=True, null=True, verbose_name="经度")
+    display_order = models.PositiveIntegerField(default=0, verbose_name="显示顺序（数字越小越靠前）")
 
     class Meta:
         verbose_name = "景点"
         verbose_name_plural = verbose_name
+        ordering = ['display_order', '-is_hot', '-rating', '-created_at']
 
     def __str__(self):
         return self.name
+    
+    def get_tags_list(self):
+        """获取标签列表"""
+        if self.tags:
+            return [tag.strip() for tag in self.tags.split(',') if tag.strip()]
+        return []
 
 
 class ScenicImage(models.Model):

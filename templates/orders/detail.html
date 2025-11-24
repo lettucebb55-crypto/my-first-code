@@ -1,0 +1,149 @@
+{% extends 'common/base.html' %}
+{% load static %}
+
+{% block title %}订单详情 - 保定旅游网{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <!-- 左侧导航 -->
+        <div class="col-lg-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    {% if user.avatar %}
+                    <img src="{{ user.avatar.url }}" alt="avatar" class="rounded-circle mb-3" style="width: 80px; height: 80px; object-fit: cover;">
+                    {% else %}
+                    <img src="https://placehold.co/80x80/3498DB/FFFFFF?text={{ user.username|first|upper }}" alt="avatar" class="rounded-circle mb-3">
+                    {% endif %}
+                    <h6 class="mb-1">{{ user.username }}</h6>
+                    <p class="text-muted small mb-0">{{ user.phone|default:"未绑定手机" }}</p>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{% url 'users:home' %}" class="list-group-item list-group-item-action">个人中心</a>
+                    <a href="{% url 'users:profile' %}" class="list-group-item list-group-item-action">信息管理</a>
+                    <a href="{% url 'users:orders' %}" class="list-group-item list-group-item-action active" aria-current="true">我的订单</a>
+                    <a href="{% url 'users:favorites' %}" class="list-group-item list-group-item-action">我的收藏</a>
+                    <a href="{% url 'users:reviews' %}" class="list-group-item list-group-item-action">我的评价</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧：订单详情 -->
+        <div class="col-lg-9">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">订单详情</h5>
+                    <a href="{% url 'users:orders' %}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>返回订单列表
+                    </a>
+                </div>
+                <div class="card-body">
+                    <!-- 订单基本信息 -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">订单信息</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <strong>订单号：</strong>{{ order.order_sn }}
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>下单时间：</strong>{{ order.created_at|date:"Y-m-d H:i:s" }}
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <strong>订单状态：</strong>
+                                    {% if order.status == 'pending' %}
+                                        <span class="badge bg-warning">{{ order.get_status_display }}</span>
+                                    {% elif order.status == 'paid' %}
+                                        <span class="badge bg-info">{{ order.get_status_display }}</span>
+                                    {% elif order.status == 'completed' %}
+                                        <span class="badge bg-success">{{ order.get_status_display }}</span>
+                                    {% elif order.status == 'cancelled' %}
+                                        <span class="badge bg-secondary">{{ order.get_status_display }}</span>
+                                    {% endif %}
+                                </div>
+                                {% if order.paid_at %}
+                                <div class="col-md-6">
+                                    <strong>支付时间：</strong>{{ order.paid_at|date:"Y-m-d H:i:s" }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>联系人：</strong>{{ order.contact_name }}
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>联系电话：</strong>{{ order.contact_phone }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 订单明细 -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">订单明细</h6>
+                        </div>
+                        <div class="card-body">
+                            {% for detail_data in detail_list %}
+                            <div class="card mb-3 {% if not forloop.last %}border-bottom{% endif %}">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <div class="mb-2">
+                                                <span class="badge bg-primary me-2">{{ detail_data.detail.get_item_type_display }}</span>
+                                                <strong>{{ detail_data.detail.item_name }}</strong>
+                                            </div>
+                                            <div class="text-muted small">
+                                                <div>数量：{{ detail_data.detail.quantity }} 件</div>
+                                                <div>单价：¥{{ detail_data.detail.price }} / 件</div>
+                                                <div>小计：¥{{ detail_data.detail.subtotal }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 text-end">
+                                            {% if detail_data.item_url %}
+                                            <a href="{{ detail_data.item_url }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye me-1"></i>查看详情
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <p class="text-muted text-center">暂无订单明细</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- 订单金额 -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">订单总金额</h5>
+                                <h4 class="mb-0 text-danger">¥{{ order.total_amount }}</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 操作按钮 -->
+                    <div class="text-end">
+                        {% if order.status == 'pending' %}
+                            <a href="{% url 'orders:payment' order_sn=order.order_sn %}" class="btn btn-primary">去支付</a>
+                        {% elif order.status == 'paid' or order.status == 'completed' %}
+                            <a href="{% url 'orders:review' order_sn=order.order_sn %}" class="btn btn-outline-primary">
+                                <i class="fas fa-star me-1"></i>去评价
+                            </a>
+                        {% endif %}
+                        <a href="{% url 'users:orders' %}" class="btn btn-outline-secondary">返回订单列表</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

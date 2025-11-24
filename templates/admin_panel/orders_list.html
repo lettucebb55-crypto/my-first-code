@@ -1,0 +1,151 @@
+{% extends "admin_panel/layout.html" %}
+{% block page_title %}财务管理{% endblock %}
+{% block page_header %}财务管理{% endblock %}
+{% block menu_orders %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>订单明细</h1>
+        <p>共 {{ paginator.count }} 条订单记录，掌握营收情况。</p>
+    </div>
+    <div class="page-header-actions">
+        <!-- 订单由系统自动创建 -->
+    </div>
+</div>
+
+<form method="get" id="searchForm" class="filter-panel">
+    <div class="field">
+        <label for="item_name">项目名称</label>
+        <input id="item_name" type="text" name="item_name" placeholder="景点 / 路线名称" value="{{ item_name }}">
+    </div>
+    <div class="field">
+        <label for="user_email">用户邮箱</label>
+        <input id="user_email" type="text" name="user_email" placeholder="用户注册邮箱" value="{{ user_email }}">
+    </div>
+    <div class="field" style="min-width:auto;">
+        <label style="visibility:hidden;">搜索</label>
+        <button type="submit">
+            <i class="fas fa-search"></i> 筛选
+        </button>
+    </div>
+</form>
+
+<div class="datatable">
+    <table>
+        <thead>
+            <tr>
+                <th>订单编号</th>
+                <th>项目名称</th>
+                <th>项目类型</th>
+                <th>用户昵称</th>
+                <th>用户邮箱</th>
+                <th>单价</th>
+                <th>数量</th>
+                <th>小计</th>
+                <th style="text-align:center;">订单状态</th>
+                <th style="text-align:center;">操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order_detail in page_obj %}
+            <tr>
+                <td>{{ order_detail.order.order_sn }}</td>
+                <td>
+                    <div class="cell-multi">
+                        {{ order_detail.item_name }}
+                        <span class="cell-meta">下单时间 {{ order_detail.order.created_at|date:"Y-m-d H:i" }}</span>
+                    </div>
+                </td>
+                <td>
+                    {% if order_detail.item_type == 'scenic' %}
+                    <span class="tag tag-blue"><i class="fas fa-ticket-alt"></i> 景点门票</span>
+                    {% elif order_detail.item_type == 'route' %}
+                    <span class="tag tag-green"><i class="fas fa-route"></i> 路线报名</span>
+                    {% else %}
+                    <span class="tag tag-orange"><i class="fas fa-box"></i> 其他</span>
+                    {% endif %}
+                </td>
+                <td>{{ order_detail.order.user.username }}</td>
+                <td>{{ order_detail.order.user.email|default:"-" }}</td>
+                <td>¥{{ order_detail.price }}</td>
+                <td>{{ order_detail.quantity }}</td>
+                <td>¥{{ order_detail.subtotal }}</td>
+                <td>
+                    {% if order_detail.order.status == 'pending' %}
+                    <span class="tag tag-orange"><i class="fas fa-clock"></i> 待支付</span>
+                    {% elif order_detail.order.status == 'paid' %}
+                    <span class="tag tag-green"><i class="fas fa-check-circle"></i> 已支付</span>
+                    {% elif order_detail.order.status == 'completed' %}
+                    <span class="tag tag-blue"><i class="fas fa-flag-checkered"></i> 已完成</span>
+                    {% elif order_detail.order.status == 'cancelled' %}
+                    <span class="tag tag-red"><i class="fas fa-times-circle"></i> 已取消</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="actions">
+                        <a href="{% url 'admin_panel:order_update_status' order_detail.order.id %}" class="btn-action btn-edit" title="更新订单状态">
+                            <i class="fas fa-edit"></i> 更新状态
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="10" class="empty-state">暂无数据</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="pagination-wrapper">
+    <div class="pagination-info">
+        共 <strong>{{ paginator.count }}</strong> 条
+        <select onchange="location.href='?page=1&item_name={{ item_name }}&user_email={{ user_email }}&per_page=' + this.value">
+            <option value="10" {% if per_page == 10 %}selected{% endif %}>10条/页</option>
+            <option value="20" {% if per_page == 20 %}selected{% endif %}>20条/页</option>
+            <option value="50" {% if per_page == 50 %}selected{% endif %}>50条/页</option>
+        </select>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&item_name={{ item_name }}&user_email={{ user_email }}&per_page={{ per_page }}">&lt;</a></li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">&lt;</span></li>
+            {% endif %}
+
+            {% for num in paginator.page_range %}
+                {% if num == page_obj.number %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item"><a class="page-link" href="?page={{ num }}&item_name={{ item_name }}&user_email={{ user_email }}&per_page={{ per_page }}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&item_name={{ item_name }}&user_email={{ user_email }}&per_page={{ per_page }}">&gt;</a></li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">&gt;</span></li>
+            {% endif %}
+        </ul>
+        <input type="number" class="page-input" id="goToPage" placeholder="1" min="1" max="{{ paginator.num_pages }}">
+        <button class="btn-go" onclick="goToPage()">跳转</button>
+    </div>
+</div>
+
+<script>
+function goToPage() {
+    const page = document.getElementById('goToPage').value;
+    if (page && page >= 1 && page <= {{ paginator.num_pages }}) {
+        const params = new URLSearchParams(window.location.search);
+        params.set('page', page);
+        params.set('item_name', "{{ item_name|escapejs }}");
+        params.set('user_email', "{{ user_email|escapejs }}");
+        params.set('per_page', "{{ per_page }}");
+        window.location.search = params.toString();
+    }
+}
+</script>
+{% endblock %}

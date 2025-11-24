@@ -1,0 +1,46 @@
+{% extends 'common/base.html' %}
+{% load static %}
+
+{% block title %}订单支付 - 保定旅游网{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-lg border-0 rounded-lg text-center">
+                <div class="card-header bg-success text-white rounded-top-lg">
+                    <h3 class="mb-0">订单支付</h3>
+                </div>
+                <div class="card-body p-5">
+
+                    <h5 class="mb-3">订单号：{{ order_sn }}</h5>
+                    <p class="text-muted">请在 30 分钟内完成支付</p>
+
+                    <img src="https://placehold.co/300x300/28a745/ffffff?text=模拟支付二维码"
+                         alt="模拟支付二维码"
+                         class="img-fluid rounded mb-4">
+
+                    {% if order %}
+                    <h4 class="mb-3">总计：<span class="text-danger fw-bold">¥{{ order.total_amount }}</span></h4>
+                    {% else %}
+                    <h4 class="mb-3">总计：<span class="text-danger fw-bold">¥0.00</span></h4>
+                    {% endif %}
+
+                    <p class="text-muted small">
+                        （这是一个模拟页面。支付功能尚未接入。）
+                    </p>
+
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'orders:payment' order_sn=order_sn %}?success=1" class="btn btn-success btn-lg">
+                            模拟支付成功 (返回订单)
+                        </a>
+                        <a href="{% url 'users:orders' %}" class="btn btn-outline-secondary">
+                            稍后支付
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

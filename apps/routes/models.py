@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 
 class RouteCategory(models.Model):
@@ -38,13 +39,31 @@ class Route(models.Model):
 
     is_hot = models.BooleanField(default=False, verbose_name="是否热门")
     is_recommended = models.BooleanField(default=False, verbose_name="是否推荐")
+    
+    # 新增字段：丰富路线信息
+    departure_city = models.CharField(max_length=50, default='保定', verbose_name="出发城市")
+    meeting_point = models.CharField(max_length=200, blank=True, null=True, verbose_name="集合地点")
+    tags = models.CharField(max_length=200, blank=True, null=True, verbose_name="特色标签（用逗号分隔）")
+    rating = models.DecimalField(max_digits=3, decimal_places=1, default=5.0, verbose_name="路线评分")
+    views_count = models.PositiveIntegerField(default=0, verbose_name="浏览次数")
+    sales_count = models.PositiveIntegerField(default=0, verbose_name="销售数量")
+    display_order = models.PositiveIntegerField(default=0, verbose_name="显示顺序（数字越小越靠前）")
+    created_at = models.DateTimeField(default=timezone.now, verbose_name="创建时间")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
 
     class Meta:
         verbose_name = "旅游路线"
         verbose_name_plural = verbose_name
+        ordering = ['display_order', '-is_hot', '-rating', '-created_at']
 
     def __str__(self):
         return self.name
+    
+    def get_tags_list(self):
+        """获取标签列表"""
+        if self.tags:
+            return [tag.strip() for tag in self.tags.split(',') if tag.strip()]
+        return []
 
 
 class RouteItinerary(models.Model):

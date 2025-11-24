@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block content %}
+{% if news %}
 <div class="container my-5">
     <div class="row justify-content-center">
         <div class="col-lg-8">
@@ -9,23 +10,34 @@
             <article>
                 <header class="mb-4">
                     <!-- 标题 -->
-                    <h1 class="fw-bolder mb-1">保定三日游超详细攻略 (必看)</h1>
+                    <h1 class="fw-bolder mb-1">{{ news.title }}</h1>
                     <!-- 元信息 -->
                     <div class="text-muted fst-italic mb-2">
-                        发布于 2025-11-01 / 阅读量 1024 / 分类:
-                        <a href="#!">旅游攻略</a>
+                        发布于 {{ news.published_at|date:"Y-m-d H:i" }} / 阅读量 {{ news.views_count }} 
+                        {% if news.category %}
+                        / 分类: <a href="{% url 'news:list' %}?category={{ news.category.id }}">{{ news.category.name }}</a>
+                        {% endif %}
+                        {% if news.author %}
+                        / 作者: {{ news.author.username }}
+                        {% endif %}
                     </div>
                 </header>
                 <!-- 封面图 -->
+                {% if news.cover_image %}
                 <figure class="mb-4">
-                    <img class="img-fluid rounded" src="https://placehold.co/900x400/F39C12/FFFFFF?text=攻略封面" alt="攻略封面" />
+                    <img class="img-fluid rounded shadow-sm" src="{{ news.cover_image.url }}" alt="{{ news.title }}" />
                 </figure>
-                <!-- 正文 (富文本) -->
+                {% endif %}
+                <!-- 正文 -->
                 <section class="mb-5">
-                    <p class="fs-5 mb-4">第一天：...</p>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. ...</p>
-                    <h2 class="fw-bolder mb-4 mt-5">第二天：深入探索</h2>
-                    <p>Nullam vel sem. ...</p>
+                    {% if news.abstract %}
+                    <div class="alert alert-info">
+                        <strong>摘要：</strong>{{ news.abstract }}
+                    </div>
+                    {% endif %}
+                    <div class="news-content" style="line-height: 1.8; font-size: 1.1rem;">
+                        {{ news.content|linebreaks }}
+                    </div>
                 </section>
             </article>
 
@@ -33,27 +45,89 @@
             <section class="mb-5">
                 <div class="card bg-light border-0 shadow-sm">
                     <div class="card-body">
+                        <h5 class="mb-3">评论 ({{ comments.count }})</h5>
+                        
                         <!-- 评论提交表单 -->
-                        <form class="mb-4">
-                            <textarea class="form-control" rows="3" placeholder="加入讨论，发表评论..."></textarea>
-                            <button type="submit" class="btn btn-primary mt-2">提交</button>
+                        {% if user.is_authenticated %}
+                        <form method="post" class="mb-4">
+                            {% csrf_token %}
+                            <textarea class="form-control" name="content" rows="3" placeholder="加入讨论，发表评论..." required></textarea>
+                            <button type="submit" class="btn btn-primary mt-2">提交评论</button>
                         </form>
+                        {% else %}
+                        <div class="alert alert-info mb-4">
+                            <a href="{% url 'users:login' %}">登录</a>后即可发表评论
+                        </div>
+                        {% endif %}
 
                         <!-- 评论列表 -->
-                        <div class="d-flex mb-4">
-                            <div class="flex-shrink-0">
-                                <img class="rounded-circle" src="https://placehold.co/50x50/avatar.png" alt="avatar" />
+                        {% if comments %}
+                        <div class="vstack gap-3">
+                            {% for comment in comments %}
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    {% if comment.user.avatar %}
+                                    <img class="rounded-circle" src="{{ comment.user.avatar.url }}" alt="{{ comment.user.username }}" style="width: 50px; height: 50px; object-fit: cover;" />
+                                    {% else %}
+                                    <img class="rounded-circle" src="https://placehold.co/50x50/3498DB/FFFFFF?text={{ comment.user.username|first|upper }}" alt="{{ comment.user.username }}" />
+                                    {% endif %}
+                                </div>
+                                <div class="ms-3 flex-grow-1">
+                                    <div class="fw-bold">{{ comment.user.username }}</div>
+                                    <div class="text-muted small">{{ comment.created_at|date:"Y-m-d H:i" }}</div>
+                                    <div class="mt-2">{{ comment.content|linebreaks }}</div>
+                                </div>
                             </div>
-                            <div class="ms-3">
-                                <div class="fw-bold">评论者A</div>
-                                非常有用的攻略！
-                            </div>
+                            {% if not forloop.last %}
+                            <hr>
+                            {% endif %}
+                            {% endfor %}
                         </div>
-
+                        {% else %}
+                        <div class="text-center text-muted py-4">
+                            <p>暂无评论，快来发表第一条评论吧！</p>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </section>
+
+            <!-- 3. 相关资讯 -->
+            {% if related_news %}
+            <section class="mb-5">
+                <h4 class="mb-3">相关资讯</h4>
+                <div class="row g-3">
+                    {% for related in related_news %}
+                    <div class="col-md-4">
+                        <div class="card h-100 shadow-sm">
+                            {% if related.cover_image %}
+                            <img src="{{ related.cover_image.url }}" class="card-img-top" alt="{{ related.title }}" style="height: 150px; object-fit: cover;">
+                            {% else %}
+                            <img src="https://placehold.co/300x150/F39C12/FFFFFF?text={{ related.title|slice:":10" }}" class="card-img-top" alt="{{ related.title }}" style="height: 150px; object-fit: cover;">
+                            {% endif %}
+                            <div class="card-body">
+                                <h6 class="card-title">{{ related.title|truncatewords:10 }}</h6>
+                                <small class="text-muted">{{ related.published_at|date:"Y-m-d" }}</small>
+                            </div>
+                            <div class="card-footer bg-transparent border-0">
+                                <a href="{% url 'news:detail' pk=related.id %}" class="btn btn-sm btn-outline-primary">阅读全文</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
         </div>
     </div>
 </div>
+{% else %}
+<div class="container my-5">
+    <div class="alert alert-danger text-center">
+        <h4>资讯不存在</h4>
+        <p>您访问的资讯不存在或已被删除。</p>
+        <a href="{% url 'news:list' %}" class="btn btn-primary">返回资讯列表</a>
+    </div>
+</div>
+{% endif %}
 {% endblock %}

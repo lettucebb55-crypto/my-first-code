@@ -1,0 +1,90 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block page_title %}后台管理{% endblock %} - 保定旅游 · 管理中心</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/admin_panel.css' %}?v=20251111">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="admin-shell">
+        <header class="admin-topbar">
+            <button class="menu-toggle" id="sidebarToggle" aria-label="切换菜单">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="topbar-brand">
+                <span class="brand-icon"><i class="fas fa-compass"></i></span>
+                <div class="brand-text">
+                    <span class="brand-title">保定旅游 · 管理后台</span>
+                    <span class="brand-subtitle">{% block page_header %}欢迎回来{% endblock %}</span>
+                </div>
+            </div>
+            <div class="topbar-meta">
+                <span class="meta-item"><i class="fas fa-user"></i> {{ request.user.username }}</span>
+                <a class="meta-link" href="/" target="_blank"><i class="fas fa-globe"></i> 查看前台</a>
+                <a class="meta-link" href="/users/profile/"><i class="fas fa-user"></i> 个人设置</a>
+                <a class="meta-button" href="{% url 'users:logout' %}?next=/admin_panel/">
+                    <i class="fas fa-sign-out-alt"></i> 安全退出
+                </a>
+            </div>
+        </header>
+
+        <div class="admin-body">
+            <aside class="admin-sidebar" id="adminSidebar">
+                <div class="sidebar-title">功能导航</div>
+                <nav class="sidebar-nav">
+                    <a class="nav-link {% block menu_dashboard %}{% endblock %}" href="{% url 'admin_panel:index' %}">
+                        <i class="fas fa-gauge"></i>
+                        <span>数据看板</span>
+                    </a>
+                    <a class="nav-link {% block menu_scenic %}{% endblock %}" href="{% url 'admin_panel:scenic_list' %}">
+                        <i class="fas fa-landmark"></i>
+                        <span>景点管理</span>
+                    </a>
+                    <a class="nav-link {% block menu_routes %}{% endblock %}" href="{% url 'admin_panel:routes_list' %}">
+                        <i class="fas fa-route"></i>
+                        <span>路线管理</span>
+                    </a>
+                    <a class="nav-link {% block menu_hotels %}{% endblock %}" href="{% url 'admin_panel:hotels_list' %}">
+                        <i class="fas fa-hotel"></i>
+                        <span>酒店管理</span>
+                    </a>
+                    <a class="nav-link {% block menu_news %}{% endblock %}" href="{% url 'admin_panel:news_list' %}">
+                        <i class="fas fa-newspaper"></i>
+                        <span>资讯发布</span>
+                    </a>
+                    <a class="nav-link {% block menu_users %}{% endblock %}" href="{% url 'admin_panel:users_list' %}">
+                        <i class="fas fa-users"></i>
+                        <span>用户信息</span>
+                    </a>
+                    <a class="nav-link {% block menu_orders %}{% endblock %}" href="{% url 'admin_panel:orders_list' %}">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                        <span>订单财务</span>
+                    </a>
+                    <a class="nav-link {% block menu_comments %}{% endblock %}" href="{% url 'admin_panel:comments_list' %}">
+                        <i class="fas fa-comments"></i>
+                        <span>用户评价</span>
+                    </a>
+                </nav>
+            </aside>
+
+            <main class="admin-main">
+                <div class="admin-main-inner">
+                    {% block page_tabs %}{% endblock %}
+                    {% block content %}{% endblock %}
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('sidebarToggle').addEventListener('click', function () {
+            document.getElementById('adminSidebar').classList.toggle('is-open');
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

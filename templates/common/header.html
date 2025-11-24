@@ -1,18 +1,17 @@
 {% load static %}
 <header>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm sticky-top">
         <div class="container">
-            <a class="navbar-brand fw-bold text-primary" href="{% url 'index:index' %}">保定旅游网</a>
+            <a class="navbar-brand fw-bold" href="{% url 'index:index' %}" style="display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-mountain" style="color: #2563eb; font-size: 1.8rem;"></i>
+                <span>保定旅游网</span>
+            </a>
 
-            <!-- 移动端汉堡按钮 -->
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
-                    aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <!-- 导航主体 -->
             <div class="collapse navbar-collapse" id="mainNavbar">
-                <!-- 1. 主导航 (左侧) -->
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
                         <a class="nav-link active" aria-current="page" href="{% url 'index:index' %}">首页</a>
@@ -27,34 +26,33 @@
                         <a class="nav-link" href="{% url 'news:list' %}">旅游资讯</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="{% url 'hotels:list' %}">推荐酒店</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="{% url 'users:home' %}">个人中心</a>
                     </li>
                 </ul>
 
-                <!-- 2. 搜索框 (中间) -->
-                <form class="d-flex mx-auto" style="width: 300px;" role="search">
-                    <input class="form-control me-2" type="search" placeholder="搜索景点/路线..." aria-label="Search">
-                    <button class="btn btn-outline-primary" type="submit">搜索</button>
+                <form class="d-flex mx-auto position-relative" style="width: 300px; max-width: 100%;" role="search" method="get" action="{% url 'index:search' %}">
+                    <i class="fas fa-search position-absolute" style="left: 1rem; top: 50%; transform: translateY(-50%); color: #6b7280; z-index: 10;"></i>
+                    <input class="form-control me-2 ps-5" type="search" name="q" placeholder="搜索景点/路线..." aria-label="Search" value="{{ request.GET.q|default:'' }}" required>
+                    <button class="btn btn-outline-primary" type="submit">
+                        <i class="fas fa-search me-1"></i>搜索
+                    </button>
                 </form>
 
-                <!-- 3. 快捷入口 (右侧) -->
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                     {% if user.is_authenticated %}
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarUserDropdown" role="button"
-                               data-bs-toggle="dropdown" aria-expanded="false">
-                                <img src="{{ user.avatar.url|default:'https://placehold.co/30x30/avatar.png' }}"
-                                     alt="avatar" class="rounded-circle"
-                                     style="width: 30px; height: 30px; object-fit: cover;">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarUserDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <img src="{{ user.avatar.url|default:'https://placehold.co/30x30/avatar.png' }}" alt="avatar" class="rounded-circle" style="width: 30px; height: 30px; object-fit: cover;">
                                 {{ user.username }}
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarUserDropdown">
                                 <li><a class="dropdown-item" href="{% url 'users:home' %}">个人中心</a></li>
                                 <li><a class="dropdown-item" href="{% url 'users:orders' %}">我的订单</a></li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li><a class="dropdown-item" href="#">退出登录</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'users:logout' %}">退出登录</a></li>
                             </ul>
                         </li>
                     {% else %}

@@ -1,5 +1,23 @@
-// 全站通用的JavaScript文件
+// 一个帮助函数，用于获取 Django 的 CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
 
+
+// 全站通用的JavaScript文件
 $(document).ready(function() {
     console.log("保定旅游网 - 页面加载完毕。");
 
@@ -69,6 +87,56 @@ $(document).ready(function() {
             $this.html('<i class="fas fa-heart"></i> 已收藏');
         }
         // --- 模拟结束 ---
+    });
+
+
+    // 【新增】取消订单的 AJAX 逻辑
+    // 我们使用事件委托，因为订单列表是动态加载的
+    $('body').on('click', '.btn-cancel-order', function(event) {
+        event.preventDefault(); // 阻止 href="#" 默认行为
+
+        var $this = $(this);
+        var orderSn = $this.data('order-sn');
+
+        if (!orderSn) {
+            alert('无法获取订单号');
+            return;
+        }
+
+        if (!confirm("您确定要取消这个订单吗？")) {
+            return;
+        }
+
+        fetch(`/api/v1/orders/cancel/${orderSn}/`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken // 必须包含 CSRF token
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                alert('订单已成功取消！');
+
+                // 更新页面上的UI
+                var $card = $this.closest('.card');
+                // 找到状态文本并更新
+                $card.find('.card-header span:last-child')
+                     .text('已取消')
+                     .removeClass('text-warning text-success')
+                     .addClass('text-muted');
+
+                // 替换整个按钮区域
+                $this.closest('.card-footer').html('<a href="#" class="btn btn-sm btn-outline-secondary">查看详情</a>');
+            } else {
+                alert('操作失败: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('请求失败，请检查网络或联系管理员。');
+        });
     });
 
 });
