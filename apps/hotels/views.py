@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.shortcuts import redirect
 from django.db.models import Avg
 from django.template.response import TemplateResponse
+from django.utils import timezone
 from .models import Hotel
 from apps.comments.models import Comment
 
@@ -92,6 +93,7 @@ class HotelDetailView(View):
                 'related_hotels': related_hotels,
                 'comments': comments,
                 'avg_rating': avg_rating,
+                'today': timezone.now().date(),
                 'page_title': f"{hotel.name} - 酒店详情 - 保定旅游网"
             }
             

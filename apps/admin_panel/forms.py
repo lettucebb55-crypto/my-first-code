@@ -5,6 +5,7 @@ from apps.hotels.models import Hotel
 from apps.news.models import News, NewsCategory
 from apps.users.models import CustomUser
 from apps.orders.models import Order
+from apps.foods.models import Food, FoodCategory
 
 
 class ScenicSpotForm(forms.ModelForm):
@@ -152,5 +153,36 @@ class OrderStatusForm(forms.ModelForm):
         fields = ['status']
         widgets = {
             'status': forms.Select(attrs={'class': 'form-control'}),
+        }
+
+
+class FoodForm(forms.ModelForm):
+    class Meta:
+        model = Food
+        fields = [
+            'category', 'name', 'english_name', 'description', 'ingredients', 
+            'cooking_method', 'cultural_background', 'cover_image', 
+            'price_range', 'average_price', 'is_recommended', 'is_hot', 
+            'is_traditional', 'rating', 'tags', 'recommended_restaurants', 
+            'display_order'
+        ]
+        widgets = {
+            'category': forms.Select(attrs={'class': 'form-control'}),
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'english_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
+            'ingredients': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'cooking_method': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'cultural_background': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'cover_image': forms.FileInput(attrs={'class': 'form-control'}),
+            'price_range': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '如：50-100元'}),
+            'average_price': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'is_recommended': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'is_hot': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'is_traditional': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'rating': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1', 'min': '0', 'max': '5'}),
+            'tags': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '用逗号分隔，如：传统,特色,小吃'}),
+            'recommended_restaurants': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': '每行一个餐厅名称'}),
+            'display_order': forms.NumberInput(attrs={'class': 'form-control'}),
         }
 

@@ -37,11 +37,13 @@
         </div>
         <div class="col-lg-4 text-lg-end">
             {% if user.is_authenticated %}
+            <a href="{% url 'checkins:create' scenic_spot_id=spot.id %}" class="btn btn-primary me-2">
+                <i class="fas fa-map-marker-alt"></i> 打卡签到
+            </a>
             <button class="btn btn-outline-danger" id="favoriteButton" data-spot-id="{{ spot.id }}" data-spot-type="scenic">
                 <i class="far fa-heart"></i> 收藏
             </button>
             {% endif %}
-            <button class="btn btn-outline-secondary">分享</button>
         </div>
     </div>
 
@@ -172,7 +174,7 @@
             </section>
 
             <!-- 评价区 -->
-            <section>
+            <section id="comment-section">
                 <h3 class="mb-4">用户评价 
                     {% if comments %}
                     <small class="text-muted">({{ comments|length }})</small>
@@ -353,4 +355,32 @@
     </div>
 </div>
 {% endif %}
+
+<script>
+// 如果URL中有review=true参数，自动滚动到评价区域
+$(document).ready(function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('review') === 'true') {
+        // 延迟一下确保页面已加载
+        setTimeout(function() {
+            const commentSection = document.getElementById('comment-section');
+            if (commentSection) {
+                // 平滑滚动到评价区域
+                commentSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // 高亮显示评价表单
+                setTimeout(function() {
+                    const commentForm = commentSection.querySelector('.card');
+                    if (commentForm) {
+                        commentForm.style.transition = 'box-shadow 0.3s';
+                        commentForm.style.boxShadow = '0 0 20px rgba(0, 123, 255, 0.5)';
+                        setTimeout(function() {
+                            commentForm.style.boxShadow = '';
+                        }, 2000);
+                    }
+                }, 500);
+            }
+        }, 300);
+    }
+});
+</script>
 {% endblock %}

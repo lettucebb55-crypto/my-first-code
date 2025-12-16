@@ -12,17 +12,43 @@
                     <h3 class="mb-0">确认订单信息</h3>
                 </div>
                 <div class="card-body p-5">
+                    <!-- 错误提示 -->
+                    {% if error %}
+                    <div class="alert alert-danger">
+                        <h5 class="alert-heading"><i class="fas fa-exclamation-triangle"></i> 参数错误</h5>
+                        <p class="mb-0">{{ error }}</p>
+                        <hr>
+                        <p class="mb-0">
+                            <a href="javascript:history.back()" class="btn btn-primary">
+                                <i class="fas fa-arrow-left"></i> 返回上一页
+                            </a>
+                        </p>
+                    </div>
+                    {% elif item %}
                     <!-- 订单详情 -->
-                    {% if item %}
                     <h5 class="mb-3">项目信息</h5>
                     <div class="card mb-3">
                         <div class="card-body">
-                            <h5 class="card-title">{{ item.name }}</h5>
-                            {% if booking_date %}
+                            <h5 class="card-title">{{ item.name }}{% if room_type %} - {{ room_type.name }}{% endif %}</h5>
+                            {% if item_type == 'hotel' %}
+                                {% if check_in_date and check_out_date %}
+                                <p class="card-text">
+                                    <i class="fas fa-calendar-check"></i> 入住日期：{{ check_in_date }}<br>
+                                    <i class="fas fa-calendar-times"></i> 退房日期：{{ check_out_date }}<br>
+                                    <i class="fas fa-moon"></i> 入住天数：{{ nights }} 晚
+                                </p>
+                                {% endif %}
+                                {% if room_type %}
+                                <p class="card-text">
+                                    <i class="fas fa-bed"></i> 房间类型：{{ room_type.name }}<br>
+                                    <i class="fas fa-users"></i> 容纳人数：{{ room_type.capacity }} 人
+                                </p>
+                                {% endif %}
+                            {% elif booking_date %}
                             <p class="card-text">日期：{{ booking_date }}</p>
                             {% endif %}
                             <p class="card-text">数量：{{ quantity }} {% if item_type == 'scenic' %}人{% elif item_type == 'route' %}人{% elif item_type == 'hotel' %}间{% endif %}</p>
-                            <p class="card-text">单价：¥{{ price }}</p>
+                            <p class="card-text">单价：¥{{ price }}{% if item_type == 'hotel' %} / 晚{% endif %}</p>
                             <p class="card-text fw-bold">小计：¥{{ total }}</p>
                         </div>
                     </div>
@@ -62,6 +88,16 @@
                         <input type="hidden" name="quantity" value="{{ quantity }}">
                         <input type="hidden" name="contact_name" value="{{ contact_name }}">
                         <input type="hidden" name="contact_phone" value="{{ contact_phone }}">
+                        {% if item_type == 'hotel' and check_in_date and check_out_date %}
+                        <input type="hidden" name="check_in_date" value="{{ check_in_date }}">
+                        <input type="hidden" name="check_out_date" value="{{ check_out_date }}">
+                        {% endif %}
+                        {% if item_type == 'hotel' and room_type_id %}
+                        <input type="hidden" name="room_type_id" value="{{ room_type_id }}">
+                        {% endif %}
+                        {% if item_type == 'route' and booking_date %}
+                        <input type="hidden" name="booking_date" value="{{ booking_date }}">
+                        {% endif %}
                         <p class="text-muted small">点击"确认提交"将为您创建订单，请在30分钟内完成支付。</p>
                         <button type="submit" class="btn btn-danger btn-lg w-100">
                             确认提交并支付

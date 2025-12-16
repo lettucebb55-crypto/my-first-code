@@ -95,7 +95,8 @@ class ScenicDetailView(View):
                 'related_spots': related_spots,
                 'comments': comments,
                 'avg_rating': avg_rating,
-                'page_title': f"{spot.name} - 景点详情 - 保定旅游网"
+                'page_title': f"{spot.name} - 景点详情 - 保定旅游网",
+                'user': request.user  # 确保传递用户对象
             }
             
         except ScenicSpot.DoesNotExist:

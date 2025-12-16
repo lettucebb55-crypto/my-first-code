@@ -98,9 +98,18 @@
                                                 <strong>{{ detail_data.detail.item_name }}</strong>
                                             </div>
                                             <div class="text-muted small">
-                                                <div>数量：{{ detail_data.detail.quantity }} 件</div>
-                                                <div>单价：¥{{ detail_data.detail.price }} / 件</div>
-                                                <div>小计：¥{{ detail_data.detail.subtotal }}</div>
+                                                <div>数量：{{ detail_data.detail.quantity }} {% if detail_data.detail.item_type == 'hotel' %}间{% elif detail_data.detail.item_type == 'route' %}人{% else %}件{% endif %}</div>
+                                                <div>单价：¥{{ detail_data.detail.price }}{% if detail_data.detail.item_type == 'hotel' %} / 晚{% elif detail_data.detail.item_type == 'route' %} / 人{% else %} / 件{% endif %}</div>
+                                                {% if detail_data.detail.item_type == 'hotel' and detail_data.detail.check_in_date and detail_data.detail.check_out_date %}
+                                                <div class="mt-2 p-2 bg-light rounded">
+                                                    <i class="fas fa-calendar-check text-success"></i> 入住日期：{{ detail_data.detail.check_in_date|date:"Y-m-d" }}<br>
+                                                    <i class="fas fa-calendar-times text-danger"></i> 退房日期：{{ detail_data.detail.check_out_date|date:"Y-m-d" }}<br>
+                                                    {% if detail_data.nights %}
+                                                    <i class="fas fa-moon text-info"></i> 入住天数：{{ detail_data.nights }} 晚
+                                                    {% endif %}
+                                                </div>
+                                                {% endif %}
+                                                <div class="mt-2"><strong>小计：¥{{ detail_data.detail.subtotal }}</strong></div>
                                             </div>
                                         </div>
                                         <div class="col-md-4 text-end">

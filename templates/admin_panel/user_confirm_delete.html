@@ -17,6 +17,60 @@
 </div>
 
 <div class="delete-confirm-container">
+    {% if has_orders %}
+    <!-- 有订单时的警告 -->
+    <div class="delete-error">
+        <i class="fas fa-ban"></i>
+        <h2>无法删除该用户</h2>
+        <p>用户名：<strong>{{ object.username }}</strong></p>
+        <p class="error-message">
+            该用户有 <strong>{{ orders_count }}</strong> 个订单，为了保护订单数据的完整性，无法删除该用户。
+        </p>
+        
+        {% if user_orders %}
+        <div class="orders-list">
+            <p class="orders-title"><strong>相关订单列表：</strong></p>
+            <ul>
+                {% for order in user_orders %}
+                <li>
+                    <a href="{% url 'admin_panel:orders_list' %}?user_email={{ object.email }}" target="_blank">
+                        {{ order.order_sn }}
+                    </a>
+                    <span class="order-status status-{{ order.status }}">
+                        {{ order.get_status_display }}
+                    </span>
+                    <span class="order-amount">¥{{ order.total_amount }}</span>
+                </li>
+                {% endfor %}
+                {% if orders_count > 10 %}
+                <li class="more-orders">... 还有 {{ orders_count|add:"-10" }} 个订单</li>
+                {% endif %}
+            </ul>
+        </div>
+        {% endif %}
+        
+        <div class="suggestions">
+            <p><strong>建议操作：</strong></p>
+            <ul>
+                <li>如果需要禁用该用户，请使用"编辑"功能，将"是否激活"设置为否</li>
+                <li>如果需要删除订单，请先前往<a href="{% url 'admin_panel:orders_list' %}?user_email={{ object.email }}">订单管理</a>处理相关订单</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="form-actions">
+        <a href="{% url 'admin_panel:user_edit' object.id %}" class="btn-primary">
+            <i class="fas fa-edit"></i> 编辑用户（停用账户）
+        </a>
+        <a href="{% url 'admin_panel:orders_list' %}?user_email={{ object.email }}" class="btn-secondary">
+            <i class="fas fa-file-invoice-dollar"></i> 查看订单
+        </a>
+        <a href="{% url 'admin_panel:users_list' %}" class="btn-secondary">
+            <i class="fas fa-arrow-left"></i> 返回列表
+        </a>
+    </div>
+    {% else %}
+    <!-- 没有订单时的正常删除确认 -->
     <div class="delete-warning">
         <i class="fas fa-exclamation-triangle"></i>
         <h2>确定要删除这个用户吗？</h2>
@@ -35,6 +89,7 @@
             </a>
         </div>
     </form>
+    {% endif %}
 </div>
 
 {% block extra_css %}
@@ -87,6 +142,149 @@
 
 .btn-danger:hover {
     background: #b91c1c;
+}
+
+.delete-error {
+    text-align: center;
+    padding: 24px;
+    background: #fee2e2;
+    border: 2px solid #ef4444;
+    border-radius: var(--radius-sm);
+    margin-bottom: 24px;
+}
+
+.delete-error i {
+    font-size: 48px;
+    color: #dc2626;
+    margin-bottom: 16px;
+}
+
+.delete-error h2 {
+    color: #991b1b;
+    margin: 16px 0;
+}
+
+.delete-error p {
+    color: #7f1d1d;
+    margin: 8px 0;
+}
+
+.error-message {
+    font-size: 16px;
+    font-weight: 500;
+    margin: 16px 0 !important;
+}
+
+.orders-list {
+    text-align: left;
+    margin: 20px 0;
+    padding: 16px;
+    background: white;
+    border-radius: var(--radius-sm);
+    border: 1px solid #fecaca;
+}
+
+.orders-title {
+    margin-bottom: 12px;
+    color: #991b1b;
+}
+
+.orders-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.orders-list li {
+    padding: 8px 12px;
+    margin: 4px 0;
+    background: #fef2f2;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.orders-list li a {
+    color: #dc2626;
+    text-decoration: none;
+    font-weight: 500;
+    flex: 1;
+}
+
+.orders-list li a:hover {
+    text-decoration: underline;
+}
+
+.order-status {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-paid {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.status-completed {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-cancelled {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.order-amount {
+    color: #dc2626;
+    font-weight: 600;
+}
+
+.more-orders {
+    color: #6b7280;
+    font-style: italic;
+}
+
+.suggestions {
+    text-align: left;
+    margin-top: 20px;
+    padding: 16px;
+    background: #fef3c7;
+    border-radius: var(--radius-sm);
+    border: 1px solid #fbbf24;
+}
+
+.suggestions p {
+    color: #92400e;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.suggestions ul {
+    margin: 0;
+    padding-left: 20px;
+    color: #78350f;
+}
+
+.suggestions li {
+    margin: 4px 0;
+}
+
+.suggestions a {
+    color: #b45309;
+    text-decoration: underline;
+}
+
+.suggestions a:hover {
+    color: #92400e;
 }
 </style>
 {% endblock %}

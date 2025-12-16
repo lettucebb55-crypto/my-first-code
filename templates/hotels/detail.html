@@ -111,7 +111,7 @@
             {% endif %}
 
             <!-- 评价区 -->
-            <section class="mt-4">
+            <section id="comment-section" class="mt-4">
                 <h3 class="mb-4">用户评价 
                     {% if comments %}
                     <small class="text-muted">({{ comments|length }})</small>
@@ -208,23 +208,33 @@
 
         <!-- 3. 右侧：预订区 -->
         <div class="col-lg-4">
-            <div class="card sticky-top shadow rounded-lg" style="top: 20px;">
+            <div class="card sticky-top shadow rounded-lg" style="top: 20px; max-height: calc(100vh - 40px); overflow-y: auto;">
                 <div class="card-header bg-success text-white rounded-top-lg">
                     <h4 class="mb-0">酒店预订</h4>
                 </div>
                 <div class="card-body">
-                    <p class="text-muted">请选择房间类型进行预订</p>
+                    <p class="text-muted mb-3">请选择房间类型进行预订</p>
                     {% if room_types %}
-                    <div class="list-group mb-3">
+                    <div class="mb-3">
                         {% for room_type in room_types %}
-                        <div class="list-group-item">
+                        <div class="room-type-option mb-2" data-room-id="{{ room_type.id }}" data-room-price="{{ room_type.price }}" style="cursor: pointer; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; transition: all 0.3s;">
                             <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h6 class="mb-1">{{ room_type.name }}</h6>
-                                    <small class="text-muted">容纳 {{ room_type.capacity }} 人</small>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <input type="radio" name="room_type" id="room_type_{{ room_type.id }}" value="{{ room_type.id }}" class="room-type-radio" {% if forloop.first %}checked{% endif %}>
+                                        <label for="room_type_{{ room_type.id }}" class="mb-0 fw-bold" style="cursor: pointer;">{{ room_type.name }}</label>
+                                    </div>
+                                    <small class="text-muted d-block">
+                                        <i class="fas fa-users"></i> 容纳 {{ room_type.capacity }} 人
+                                        {% if room_type.remaining_count > 0 %}
+                                        <span class="text-success"> | 剩余 {{ room_type.remaining_count }} 间</span>
+                                        {% else %}
+                                        <span class="text-danger"> | 已满房</span>
+                                        {% endif %}
+                                    </small>
                                 </div>
-                                <div class="text-end">
-                                    <strong class="text-danger">¥{{ room_type.price }}</strong>
+                                <div class="text-end ms-3">
+                                    <strong class="text-danger fs-5">¥{{ room_type.price }}</strong>
                                     <br>
                                     <small class="text-muted">/ 晚</small>
                                 </div>
@@ -237,7 +247,109 @@
                         <p class="mb-0">暂无可用房间</p>
                     </div>
                     {% endif %}
-                    <a href="{% url 'orders:confirm' %}?item_id={{ hotel.id }}&item_type=hotel" class="btn btn-success btn-lg w-100">立即预订</a>
+                    
+                    <!-- 日期选择 -->
+                    <form id="hotelBookingForm" method="GET" action="{% url 'orders:confirm' %}">
+                        <input type="hidden" name="item_id" value="{{ hotel.id }}">
+                        <input type="hidden" name="item_type" value="hotel">
+                        <input type="hidden" name="room_type_id" id="room_type_id" value="{% if room_types %}{{ room_types.0.id }}{% endif %}">
+                        <div class="mb-3">
+                            <label for="check_in_date" class="form-label fw-bold">入住日期 <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="check_in_date" name="check_in_date" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="check_out_date" class="form-label fw-bold">退房日期 <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="check_out_date" name="check_out_date" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="quantity" class="form-label fw-bold">房间数量 <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="quantity" name="quantity" value="1" min="1" required>
+                        </div>
+                        <button type="submit" class="btn btn-success btn-lg w-100">
+                            <i class="fas fa-calendar-check"></i> 立即预订
+                        </button>
+                    </form>
+                    <style>
+                        .room-type-option {
+                            transition: all 0.3s ease;
+                        }
+                        .room-type-option:hover {
+                            border-color: #10b981 !important;
+                            background-color: #f0fdf4;
+                        }
+                        .room-type-option.selected {
+                            border-color: #10b981 !important;
+                            background-color: #ecfdf5;
+                            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+                        }
+                        .room-type-radio {
+                            cursor: pointer;
+                        }
+                    </style>
+                    <script>
+                        // 房间类型选择功能
+                        document.querySelectorAll('.room-type-option').forEach(function(option) {
+                            option.addEventListener('click', function(e) {
+                                // 如果点击的是radio或label，不阻止默认行为
+                                if (e.target.type === 'radio' || e.target.tagName === 'LABEL') {
+                                    return;
+                                }
+                                
+                                const radio = this.querySelector('.room-type-radio');
+                                if (radio && !radio.disabled) {
+                                    radio.checked = true;
+                                    updateSelectedRoom();
+                                }
+                            });
+                            
+                            const radio = option.querySelector('.room-type-radio');
+                            if (radio) {
+                                radio.addEventListener('change', function() {
+                                    updateSelectedRoom();
+                                });
+                            }
+                        });
+                        
+                        function updateSelectedRoom() {
+                            const selectedRadio = document.querySelector('input[name="room_type"]:checked');
+                            if (selectedRadio) {
+                                const roomId = selectedRadio.value;
+                                const roomOption = selectedRadio.closest('.room-type-option');
+                                
+                                // 更新隐藏字段
+                                document.getElementById('room_type_id').value = roomId;
+                                
+                                // 更新视觉样式
+                                document.querySelectorAll('.room-type-option').forEach(function(opt) {
+                                    opt.classList.remove('selected');
+                                });
+                                if (roomOption) {
+                                    roomOption.classList.add('selected');
+                                }
+                            }
+                        }
+                        
+                        // 初始化选中状态
+                        updateSelectedRoom();
+                        
+                        // 设置最小日期为今天
+                        const today = new Date().toISOString().split('T')[0];
+                        document.getElementById('check_in_date').setAttribute('min', today);
+                        document.getElementById('check_out_date').setAttribute('min', today);
+                        
+                        // 当选择入住日期后，退房日期的最小值应该是入住日期的下一天
+                        document.getElementById('check_in_date').addEventListener('change', function() {
+                            const checkInDate = new Date(this.value);
+                            checkInDate.setDate(checkInDate.getDate() + 1);
+                            const minCheckOut = checkInDate.toISOString().split('T')[0];
+                            document.getElementById('check_out_date').setAttribute('min', minCheckOut);
+                            
+                            // 如果当前退房日期早于新的最小值，则清空
+                            if (document.getElementById('check_out_date').value < minCheckOut) {
+                                document.getElementById('check_out_date').value = '';
+                            }
+                        });
+                    </script>
                 </div>
             </div>
         </div>
@@ -279,5 +391,33 @@
     </div>
 </div>
 {% endif %}
+
+<script>
+// 如果URL中有review=true参数，自动滚动到评价区域
+$(document).ready(function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('review') === 'true') {
+        // 延迟一下确保页面已加载
+        setTimeout(function() {
+            const commentSection = document.getElementById('comment-section');
+            if (commentSection) {
+                // 平滑滚动到评价区域
+                commentSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // 高亮显示评价表单
+                setTimeout(function() {
+                    const commentForm = commentSection.querySelector('.card');
+                    if (commentForm) {
+                        commentForm.style.transition = 'box-shadow 0.3s';
+                        commentForm.style.boxShadow = '0 0 20px rgba(0, 123, 255, 0.5)';
+                        setTimeout(function() {
+                            commentForm.style.boxShadow = '';
+                        }, 2000);
+                    }
+                }, 500);
+            }
+        }, 300);
+    }
+});
+</script>
 {% endblock %}
 

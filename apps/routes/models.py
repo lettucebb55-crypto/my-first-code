@@ -29,7 +29,7 @@ class Route(models.Model):
     group_size = models.PositiveIntegerField(default=10, verbose_name="成团人数")
     deadline = models.DateField(verbose_name="报名截止时间")
 
-    cover_image = models.ImageField(upload_to='route_covers/', verbose_name="封面图")
+    cover_image = models.ImageField(upload_to='route_covers/', blank=True, null=True, verbose_name="封面图")
 
     # 详情信息
     itinerary_summary = models.TextField(verbose_name="行程概览")

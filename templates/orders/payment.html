@@ -16,9 +16,17 @@
                     <h5 class="mb-3">订单号：{{ order_sn }}</h5>
                     <p class="text-muted">请在 30 分钟内完成支付</p>
 
-                    <img src="https://placehold.co/300x300/28a745/ffffff?text=模拟支付二维码"
-                         alt="模拟支付二维码"
-                         class="img-fluid rounded mb-4">
+                    <div class="mb-4 d-flex justify-content-center">
+                        <img src="{% static 'images/payment_qr_code.png' %}"
+                             alt="支付二维码"
+                             class="img-fluid rounded"
+                             style="max-width: 300px; height: auto; border: 2px solid #28a745; padding: 10px; background: #ffffff;"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <div style="display: none; padding: 20px; text-align: center; color: #666;">
+                            <p>请将支付二维码图片保存为：</p>
+                            <p><code>static/images/payment_qr_code.png</code></p>
+                        </div>
+                    </div>
 
                     {% if order %}
                     <h4 class="mb-3">总计：<span class="text-danger fw-bold">¥{{ order.total_amount }}</span></h4>

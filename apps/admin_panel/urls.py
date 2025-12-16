@@ -43,4 +43,10 @@ urlpatterns = [
     # 用户评价管理
     path('comments/', views.CommentsListView.as_view(), name='comments_list'),
     path('comments/<int:pk>/delete/', views.CommentDeleteView.as_view(), name='comment_delete'),
+    
+    # 美食管理
+    path('foods/', views.FoodsListView.as_view(), name='foods_list'),
+    path('foods/add/', views.FoodCreateView.as_view(), name='food_add'),
+    path('foods/<int:pk>/edit/', views.FoodUpdateView.as_view(), name='food_edit'),
+    path('foods/<int:pk>/delete/', views.FoodDeleteView.as_view(), name='food_delete'),
 ]

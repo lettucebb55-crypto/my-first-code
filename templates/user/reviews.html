@@ -9,26 +9,25 @@
         <div class="col-lg-3">
              <div class="card">
                 <div class="card-body text-center">
-                    {% if user.avatar %}
-                    <img src="{{ user.avatar.url }}" alt="avatar" class="rounded-circle mb-3" style="width: 80px; height: 80px; object-fit: cover;">
-                    {% else %}
-                    <img src="https://placehold.co/80x80/3498DB/FFFFFF?text={{ user.username|first|upper }}" alt="avatar" class="rounded-circle mb-3">
-                    {% endif %}
-                    <h6 class="mb-1">用户名 ({{ user.username }})</h6>
-                    <p class="text-muted small mb-0">{{ user.phone|default:"未绑定手机" }}</p>
+                    <img src="{{ user.avatar.url|default:'https://placehold.co/120x120/avatar.png' }}" alt="User Avatar" class="rounded-circle mb-3" style="width: 120px; height: 120px; object-fit: cover;">
+                    <h5 class="card-title">用户名 ({{ user.username|default:"TestUser" }})</h5>
+                    <p class="card-text text-muted">{{ user.phone|default:"138****1234" }}</p>
                 </div>
                 <div class="list-group list-group-flush">
                     <a href="{% url 'users:home' %}" class="list-group-item list-group-item-action">
                         <i class="fas fa-home me-2"></i>个人中心
                     </a>
                     <a href="{% url 'users:profile' %}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-user me-2"></i>信息管理
+                        <i class="fas fa-user-edit me-2"></i>信息管理
                     </a>
                     <a href="{% url 'users:orders' %}" class="list-group-item list-group-item-action">
                         <i class="fas fa-shopping-bag me-2"></i>我的订单
                     </a>
                     <a href="{% url 'users:favorites' %}" class="list-group-item list-group-item-action">
                         <i class="fas fa-heart me-2"></i>我的收藏
+                    </a>
+                    <a href="{% url 'users:home' %}?tab=checkins" class="list-group-item list-group-item-action">
+                        <i class="fas fa-map-marker-alt me-2"></i>我的打卡
                     </a>
                     <a href="{% url 'users:reviews' %}" class="list-group-item list-group-item-action active" aria-current="true">
                         <i class="fas fa-star me-2"></i>我的评价
@@ -44,6 +43,7 @@
                     <h5 class="mb-0"><i class="fas fa-star me-2"></i>我的评价</h5>
                 </div>
                 <div class="card-body">
+                    {% csrf_token %}
                     {% if comment_list %}
                     <!-- 评价列表 (v-stack) -->
                     <div class="vstack gap-3">
@@ -82,21 +82,21 @@
                                     {% endfor %}
                                 </div>
                                 {% endif %}
-                                <div class="mt-3">
+                                <div class="mt-3 d-flex gap-2">
                                     {% if item.target_type == 'scenic' and item.target_id %}
-                                    <a href="{% url 'scenic:detail' pk=item.target_id %}" class="btn btn-primary btn-sm" style="position: relative; z-index: 10; cursor: pointer;" onclick="console.log('点击查看详情: 景点 {{ item.target_id }}');">
+                                    <a href="{% url 'scenic:detail' pk=item.target_id %}" class="btn btn-primary btn-sm" style="position: relative; z-index: 10; cursor: pointer;">
                                         <i class="fas fa-eye me-1"></i>查看详情
                                     </a>
                                     {% elif item.target_type == 'route' and item.target_id %}
-                                    <a href="{% url 'routes:detail' pk=item.target_id %}" class="btn btn-primary btn-sm" style="position: relative; z-index: 10; cursor: pointer;" onclick="console.log('点击查看详情: 路线 {{ item.target_id }}');">
+                                    <a href="{% url 'routes:detail' pk=item.target_id %}" class="btn btn-primary btn-sm" style="position: relative; z-index: 10; cursor: pointer;">
                                         <i class="fas fa-eye me-1"></i>查看详情
                                     </a>
                                     {% elif item.target_type == 'hotel' and item.target_id %}
-                                    <a href="{% url 'hotels:detail' pk=item.target_id %}" class="btn btn-primary btn-sm" style="position: relative; z-index: 10; cursor: pointer;" onclick="console.log('点击查看详情: 酒店 {{ item.target_id }}');">
+                                    <a href="{% url 'hotels:detail' pk=item.target_id %}" class="btn btn-primary btn-sm" style="position: relative; z-index: 10; cursor: pointer;">
                                         <i class="fas fa-eye me-1"></i>查看详情
                                     </a>
                                     {% elif item.target_type == 'news' and item.target_id %}
-                                    <a href="{% url 'news:detail' pk=item.target_id %}" class="btn btn-primary btn-sm" style="position: relative; z-index: 10; cursor: pointer;" onclick="console.log('点击查看详情: 资讯 {{ item.target_id }}');">
+                                    <a href="{% url 'news:detail' pk=item.target_id %}" class="btn btn-primary btn-sm" style="position: relative; z-index: 10; cursor: pointer;">
                                         <i class="fas fa-eye me-1"></i>查看详情
                                     </a>
                                     {% else %}
@@ -104,6 +104,11 @@
                                         <i class="fas fa-exclamation-triangle me-1"></i>无法查看（对象不存在或已删除）
                                     </span>
                                     {% endif %}
+                                    <button class="btn btn-danger btn-sm delete-comment-btn" 
+                                            data-comment-id="{{ item.comment.id }}"
+                                            style="position: relative; z-index: 10;">
+                                        <i class="fas fa-trash-alt me-1"></i>删除评价
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -121,4 +126,149 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 确保jQuery已加载
+if (typeof jQuery === 'undefined') {
+    console.error('jQuery未加载，请检查base.html中的jQuery引用');
+} else {
+    $(document).ready(function() {
+        // 获取CSRF token的辅助函数
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // 获取CSRF token（多种方式尝试）
+        function getCsrfToken() {
+            // 方法1: 从隐藏input获取
+            var token = $('[name=csrfmiddlewaretoken]').val();
+            if (token) return token;
+            
+            // 方法2: 从meta标签获取（如果base.html中有）
+            var metaToken = $('meta[name=csrf-token]').attr('content');
+            if (metaToken) return metaToken;
+            
+            // 方法3: 使用全局函数（如果main.js中有）
+            if (typeof window.getCSRFToken === 'function') {
+                token = window.getCSRFToken();
+                if (token) return token;
+            }
+            
+            // 方法4: 从cookie获取
+            token = getCookie('csrftoken');
+            return token;
+        }
+        
+        // 删除评论功能
+        $(document).on('click', '.delete-comment-btn', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            var $btn = $(this);
+            var commentId = $btn.data('comment-id');
+            var $card = $btn.closest('.card');
+            
+            console.log('点击删除按钮，评论ID:', commentId);
+            
+            if (!commentId) {
+                alert('无法获取评论ID，请刷新页面后重试');
+                return false;
+            }
+            
+            if (!confirm('确定要删除这条评价吗？删除后无法恢复。')) {
+                return false;
+            }
+            
+            // 禁用按钮，防止重复点击
+            $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>删除中...');
+            
+            // 获取CSRF token
+            var csrfToken = getCsrfToken();
+            console.log('CSRF Token:', csrfToken ? '已获取' : '未获取');
+            
+            if (!csrfToken) {
+                alert('无法获取安全令牌，请刷新页面后重试');
+                $btn.prop('disabled', false).html('<i class="fas fa-trash-alt me-1"></i>删除评价');
+                return false;
+            }
+            
+            // 发送AJAX请求删除评论
+            $.ajax({
+                url: '/api/v1/comments/' + commentId + '/',
+                type: 'DELETE',
+                headers: {
+                    'X-CSRFToken': csrfToken
+                },
+                dataType: 'json',
+                success: function(response) {
+                    console.log('删除成功:', response);
+                    if (response && response.status === 'success') {
+                        // 淡出并移除卡片
+                        $card.fadeOut(300, function() {
+                            $(this).remove();
+                            // 如果所有评论都被删除了，显示空状态
+                            if ($('.vstack .card').length === 0) {
+                                location.reload();
+                            }
+                        });
+                    } else {
+                        alert('删除失败：' + (response.message || '未知错误'));
+                        $btn.prop('disabled', false).html('<i class="fas fa-trash-alt me-1"></i>删除评价');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('删除失败:', {
+                        status: xhr.status,
+                        statusText: xhr.statusText,
+                        responseText: xhr.responseText,
+                        error: error
+                    });
+                    
+                    var errorMsg = '删除失败';
+                    try {
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        } else if (xhr.responseText) {
+                            var response = JSON.parse(xhr.responseText);
+                            if (response.message) {
+                                errorMsg = response.message;
+                            }
+                        }
+                    } catch (e) {
+                        // 解析失败，使用默认错误信息
+                    }
+                    
+                    if (xhr.status === 403) {
+                        errorMsg = '无权删除此评论或安全令牌无效';
+                    } else if (xhr.status === 404) {
+                        errorMsg = '评论不存在';
+                    } else if (xhr.status === 0) {
+                        errorMsg = '网络错误，请检查网络连接';
+                    } else if (xhr.status === 500) {
+                        errorMsg = '服务器错误，请稍后重试';
+                    }
+                    
+                    alert(errorMsg);
+                    $btn.prop('disabled', false).html('<i class="fas fa-trash-alt me-1"></i>删除评价');
+                }
+            });
+            
+            return false;
+        });
+    });
+}
+</script>
 {% endblock %}

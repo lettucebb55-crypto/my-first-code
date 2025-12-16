@@ -41,7 +41,7 @@
         </div>
         <div class="col-lg-4 text-lg-end">
             {% if user.is_authenticated %}
-            <button class="btn btn-outline-danger" id="favoriteButton" data-route-id="{{ route.id }}" data-route-type="route">
+            <button class="btn btn-outline-danger" id="favoriteButton" data-spot-id="{{ route.id }}" data-spot-type="route">
                 <i class="far fa-heart"></i> 收藏
             </button>
             {% endif %}
@@ -154,7 +154,7 @@
             </section>
 
             <!-- 评价区 -->
-            <section class="mt-4">
+            <section id="comment-section" class="mt-4">
                 <h3 class="mb-4">用户评价 
                     {% if comments %}
                     <small class="text-muted">({{ comments|length }})</small>
@@ -263,30 +263,96 @@
                         <li><i class="fas fa-clock text-success me-2"></i> {{ route.days }}天行程</li>
                     </ul>
                     <hr>
-                    <form id="bookingForm" action="{% url 'orders:confirm' %}" method="GET">
+                    <form id="bookingForm" action="{% url 'orders:confirm' %}" method="GET" onsubmit="return validateBookingForm(event)">
                         <input type="hidden" name="item_id" value="{{ route.id }}">
                         <input type="hidden" name="item_type" value="route">
                         
                         <div class="mb-3">
-                            <label for="bookingDate" class="form-label fw-bold">选择出行日期</label>
-                            <input type="date" class="form-control" id="bookingDate" name="booking_date" min="{{ route.deadline|date:'Y-m-d' }}" required>
+                            <label for="bookingDate" class="form-label fw-bold">选择出行日期 <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="bookingDate" name="booking_date" required>
                             <small class="text-muted">报名截止：{{ route.deadline|date:"Y-m-d" }}</small>
+                            <div class="invalid-feedback">请选择出行日期</div>
                         </div>
                         <div class="mb-3">
-                            <label for="bookingCount" class="form-label fw-bold">参与人数</label>
+                            <label for="bookingCount" class="form-label fw-bold">参与人数 <span class="text-danger">*</span></label>
                             <input type="number" class="form-control" id="bookingCount" name="quantity" value="1" min="1" max="{{ route.group_size }}" required>
                             <small class="text-muted">最多{{ route.group_size }}人</small>
+                            <div class="invalid-feedback">请输入参与人数（1-{{ route.group_size }}人）</div>
                         </div>
                         <div class="mb-3">
-                            <label for="contactName" class="form-label fw-bold">联系人姓名</label>
+                            <label for="contactName" class="form-label fw-bold">联系人姓名 <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="contactName" name="contact_name" placeholder="请输入姓名" required>
+                            <div class="invalid-feedback">请输入联系人姓名</div>
                         </div>
                         <div class="mb-3">
-                            <label for="contactPhone" class="form-label fw-bold">联系人手机</label>
+                            <label for="contactPhone" class="form-label fw-bold">联系人手机 <span class="text-danger">*</span></label>
                             <input type="tel" class="form-control" id="contactPhone" name="contact_phone" placeholder="请输入11位手机号" pattern="[0-9]{11}" required>
+                            <div class="invalid-feedback">请输入正确的11位手机号</div>
                         </div>
-                        <button type="submit" class="btn btn-danger btn-lg w-100">立即报名</button>
+                        <button type="submit" class="btn btn-danger btn-lg w-100">
+                            <i class="fas fa-calendar-check"></i> 立即报名
+                        </button>
                     </form>
+                    <script>
+                        // 设置日期选择器的最小日期
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const bookingDateInput = document.getElementById('bookingDate');
+                            if (bookingDateInput) {
+                                // 最小日期应该是今天或截止日期，取较晚的
+                                const today = new Date();
+                                const deadline = new Date('{{ route.deadline|date:"Y-m-d" }}');
+                                const minDate = deadline > today ? deadline : today;
+                                bookingDateInput.setAttribute('min', minDate.toISOString().split('T')[0]);
+                                
+                                // 如果截止日期已过，禁用日期选择
+                                if (deadline < today) {
+                                    bookingDateInput.disabled = true;
+                                    bookingDateInput.placeholder = '报名已截止';
+                                }
+                            }
+                        });
+                        
+                        // 表单验证函数
+                        function validateBookingForm(event) {
+                            const form = event.target;
+                            const bookingDate = document.getElementById('bookingDate').value;
+                            const quantity = document.getElementById('bookingCount').value;
+                            const contactName = document.getElementById('contactName').value.trim();
+                            const contactPhone = document.getElementById('contactPhone').value.trim();
+                            
+                            // 检查所有必填字段
+                            if (!bookingDate) {
+                                event.preventDefault();
+                                alert('请选择出行日期');
+                                document.getElementById('bookingDate').focus();
+                                return false;
+                            }
+                            
+                            if (!quantity || quantity < 1 || quantity > {{ route.group_size }}) {
+                                event.preventDefault();
+                                alert('请输入正确的参与人数（1-{{ route.group_size }}人）');
+                                document.getElementById('bookingCount').focus();
+                                return false;
+                            }
+                            
+                            if (!contactName) {
+                                event.preventDefault();
+                                alert('请输入联系人姓名');
+                                document.getElementById('contactName').focus();
+                                return false;
+                            }
+                            
+                            if (!contactPhone || !/^[0-9]{11}$/.test(contactPhone)) {
+                                event.preventDefault();
+                                alert('请输入正确的11位手机号');
+                                document.getElementById('contactPhone').focus();
+                                return false;
+                            }
+                            
+                            // 验证通过，允许提交
+                            return true;
+                        }
+                    </script>
                 </div>
             </div>
         </div>
@@ -346,4 +412,32 @@
     </div>
 </div>
 {% endif %}
+
+<script>
+// 如果URL中有review=true参数，自动滚动到评价区域
+$(document).ready(function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('review') === 'true') {
+        // 延迟一下确保页面已加载
+        setTimeout(function() {
+            const commentSection = document.getElementById('comment-section');
+            if (commentSection) {
+                // 平滑滚动到评价区域
+                commentSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // 高亮显示评价表单
+                setTimeout(function() {
+                    const commentForm = commentSection.querySelector('.card');
+                    if (commentForm) {
+                        commentForm.style.transition = 'box-shadow 0.3s';
+                        commentForm.style.boxShadow = '0 0 20px rgba(0, 123, 255, 0.5)';
+                        setTimeout(function() {
+                            commentForm.style.boxShadow = '';
+                        }, 2000);
+                    }
+                }, 500);
+            }
+        }, 300);
+    }
+});
+</script>
 {% endblock %}

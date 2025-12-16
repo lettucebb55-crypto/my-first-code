@@ -8,14 +8,16 @@
         <div class="col-lg-3">
             <div class="card">
                 <div class="card-body text-center">
-                    <img src="https://placehold.co/120x120/avatar.png" alt="User Avatar" class="rounded-circle mb-3">
-                    <h5 class="card-title">用户名</h5>
+                    <img src="{{ user.avatar.url|default:'https://placehold.co/120x120/avatar.png' }}" alt="User Avatar" class="rounded-circle mb-3" style="width: 120px; height: 120px; object-fit: cover;">
+                    <h5 class="card-title">用户名 ({{ user.username|default:"TestUser" }})</h5>
+                    <p class="card-text text-muted">{{ user.phone|default:"138****1234" }}</p>
                 </div>
                 <div class="list-group list-group-flush">
                     <a href="{% url 'users:home' %}" class="list-group-item list-group-item-action">个人中心</a>
                     <a href="{% url 'users:profile' %}" class="list-group-item list-group-item-action active" aria-current="true">信息管理</a>
                     <a href="{% url 'users:orders' %}" class="list-group-item list-group-item-action">我的订单</a>
                     <a href="{% url 'users:favorites' %}" class="list-group-item list-group-item-action">我的收藏</a>
+                    <a href="{% url 'users:home' %}?tab=checkins" class="list-group-item list-group-item-action">我的打卡</a>
                     <a href="{% url 'users:reviews' %}" class="list-group-item list-group-item-action">我的评价</a>
                 </div>
             </div>

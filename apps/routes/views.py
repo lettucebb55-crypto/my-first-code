@@ -23,8 +23,8 @@ class RouteListView(TemplateView):
         days = self.request.GET.get('days')
         search_query = self.request.GET.get('search', '')
         
-        # 获取路线列表
-        routes = Route.objects.all()
+        # 获取路线列表（包含封面图）
+        routes = Route.objects.all().select_related('category')
         
         # 按分类筛选
         if category_id:

@@ -17,6 +17,8 @@ urlpatterns = [
     path('news/', include('apps.news.urls')),
     path('orders/', include('apps.orders.urls')),
     path('hotels/', include('apps.hotels.urls')),
+    path('checkins/', include('apps.checkins.urls')),  # 打卡签到模块
+    path('foods/', include('apps.foods.urls')),  # 美食文化模块
     path('admin_panel/', include('apps.admin_panel.urls')),  # 您的自定义统计后台
 
     # API 接口路由 (统一前缀 /api/v1/)
@@ -25,6 +27,9 @@ urlpatterns = [
     path('api/v1/routes/', include('apps.routes.api_urls')),
     path('api/v1/news/', include('apps.news.api_urls')),
     path('api/v1/orders/', include('apps.orders.api_urls')),
+    path('api/v1/checkins/', include('apps.checkins.api_urls')),  # 打卡签到API
+    path('api/v1/foods/', include('apps.foods.api_urls')),  # 美食文化API
+    path('api/v1/comments/', include('apps.comments.api_urls')),  # 评论API
 ]
 
 # 在开发模式下，允许Django服务静态文件和媒体文件

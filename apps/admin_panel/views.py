@@ -16,9 +16,10 @@ from apps.routes.models import Route, RouteCategory
 from apps.hotels.models import Hotel
 from apps.news.models import News, NewsCategory
 from apps.comments.models import Comment
+from apps.foods.models import Food, FoodCategory
 
 # 导入表单
-from .forms import ScenicSpotForm, RouteForm, HotelForm, NewsForm, UserForm, OrderStatusForm
+from .forms import ScenicSpotForm, RouteForm, HotelForm, NewsForm, UserForm, OrderStatusForm, FoodForm
 
 
 # 添加权限验证，确保只有职员(staff)才能访问
@@ -44,6 +45,7 @@ class AdminIndexView(LoginRequiredMixin, StaffRequiredMixin, TemplateView):
         context['total_routes'] = Route.objects.count()
         context['total_hotels'] = Hotel.objects.count()
         context['total_news'] = News.objects.count()
+        context['total_foods'] = Food.objects.count()
 
         # 今日预订
         today = timezone.now().date()
@@ -588,7 +590,38 @@ class UserDeleteView(LoginRequiredMixin, StaffRequiredMixin, DeleteView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['page_title'] = '删除用户'
+        
+        # 检查用户是否有订单
+        user_orders = Order.objects.filter(user=self.object)
+        context['has_orders'] = user_orders.exists()
+        context['orders_count'] = user_orders.count()
+        context['user_orders'] = user_orders[:10]  # 最多显示10个订单
+        
         return context
+    
+    def delete(self, request, *args, **kwargs):
+        """
+        删除用户 - 如果用户有订单，则阻止删除
+        """
+        self.object = self.get_object()
+        
+        # 检查用户是否有订单
+        user_orders = Order.objects.filter(user=self.object)
+        if user_orders.exists():
+            orders_list = list(user_orders.values_list('order_sn', flat=True)[:5])
+            orders_str = '、'.join(orders_list)
+            if user_orders.count() > 5:
+                orders_str += f' 等 {user_orders.count()} 个订单'
+            
+            messages.error(
+                request, 
+                f'无法删除用户 "{self.object.username}"，该用户有 {user_orders.count()} 个订单（{orders_str}）。'
+                '为了保护订单数据完整性，请先处理相关订单，或使用"停用账户"功能代替删除。'
+            )
+            return redirect('admin_panel:user_delete', pk=self.object.pk)
+        
+        # 如果没有订单，正常删除
+        return super().delete(request, *args, **kwargs)
 
 
 # ==================== 订单管理 ====================
@@ -674,4 +707,98 @@ class CommentDeleteView(LoginRequiredMixin, StaffRequiredMixin, DeleteView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['page_title'] = '删除评价'
+        return context
+
+
+# ==================== 美食管理 ====================
+
+class FoodsListView(LoginRequiredMixin, StaffRequiredMixin, TemplateView):
+    template_name = "admin_panel/foods_list.html"
+    login_url = '/users/login/'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        query = Food.objects.select_related('category').all().order_by('-created_at')
+
+        # 搜索过滤
+        search = self.request.GET.get('search', '')
+        if search:
+            query = query.filter(
+                Q(name__icontains=search) |
+                Q(description__icontains=search) |
+                Q(tags__icontains=search)
+            )
+
+        category_id = self.request.GET.get('category', '')
+        if category_id:
+            query = query.filter(category_id=category_id)
+
+        # 分页
+        try:
+            per_page = int(self.request.GET.get('per_page', 10))
+            if per_page not in [10, 20, 50]:
+                per_page = 10
+        except (ValueError, TypeError):
+            per_page = 10
+        paginator = Paginator(query, per_page)
+        page_number = self.request.GET.get('page', 1)
+        page_obj = paginator.get_page(page_number)
+
+        context.update({
+            'page_obj': page_obj,
+            'paginator': paginator,
+            'categories': FoodCategory.objects.all(),
+            'search': search,
+            'category_id': category_id,
+            'per_page': per_page,
+        })
+        return context
+
+
+class FoodCreateView(LoginRequiredMixin, StaffRequiredMixin, CreateView):
+    model = Food
+    form_class = FoodForm
+    template_name = 'admin_panel/food_form.html'
+    login_url = '/users/login/'
+
+    def get_success_url(self):
+        messages.success(self.request, '美食创建成功！')
+        return reverse_lazy('admin_panel:foods_list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_title'] = '新增美食'
+        context['form_title'] = '新增美食'
+        return context
+
+
+class FoodUpdateView(LoginRequiredMixin, StaffRequiredMixin, UpdateView):
+    model = Food
+    form_class = FoodForm
+    template_name = 'admin_panel/food_form.html'
+    login_url = '/users/login/'
+
+    def get_success_url(self):
+        messages.success(self.request, '美食更新成功！')
+        return reverse_lazy('admin_panel:foods_list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_title'] = '编辑美食'
+        context['form_title'] = f'编辑美食：{self.object.name}'
+        return context
+
+
+class FoodDeleteView(LoginRequiredMixin, StaffRequiredMixin, DeleteView):
+    model = Food
+    template_name = 'admin_panel/food_confirm_delete.html'
+    login_url = '/users/login/'
+
+    def get_success_url(self):
+        messages.success(self.request, '美食删除成功！')
+        return reverse_lazy('admin_panel:foods_list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_title'] = '删除美食'
         return context

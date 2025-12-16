@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'apps.orders',
     'apps.hotels',      # 酒店模块
     'apps.comments',    # 评论模块
+    'apps.checkins',    # 打卡签到模块
+    'apps.foods',       # 美食文化模块
     'apps.admin_panel', # 自定义后台
     'apps.index',       # 用于处理首页等
 ]
@@ -120,8 +122,8 @@ STATICFILES_DIRS = [
 ]
 
 # Media files (User uploaded files)
-# 用户上传文件的访问URL
-MEDIA_URL = 'media/'
+# 用户上传文件的访问URL（必须以/开头和结尾）
+MEDIA_URL = '/media/'
 # 用户上传文件的存储目录 (项目根目录下的 'media' 文件夹)
 MEDIA_ROOT = BASE_DIR / 'media'
 

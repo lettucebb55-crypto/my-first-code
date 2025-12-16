@@ -17,8 +17,26 @@ class UserHomeView(LoginRequiredMixin, TemplateView):  # 添加 LoginRequiredMix
     # 获取订单数据
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        user = self.request.user
+        
         # 获取最近3条订单
-        context['recent_orders'] = Order.objects.filter(user=self.request.user).order_by('-created_at')[:3]
+        context['recent_orders'] = Order.objects.filter(user=user).order_by('-created_at')[:3]
+        
+        # 统计数据
+        # 1. 总订单数
+        context['total_orders'] = Order.objects.filter(user=user).count()
+        
+        # 2. 我的收藏数
+        from .models import Favorite
+        context['total_favorites'] = Favorite.objects.filter(user=user).count()
+        
+        # 3. 已发评价数（排除已删除的）
+        from apps.comments.models import Comment
+        context['total_comments'] = Comment.objects.filter(
+            user=user,
+            is_deleted=False
+        ).count()
+        
         return context
 
 
@@ -49,6 +67,52 @@ class UserOrdersView(LoginRequiredMixin, TemplateView):  # 添加 LoginRequiredM
 class UserFavoritesView(LoginRequiredMixin, TemplateView):  # 添加 LoginRequiredMixin
     template_name = "user/favorites.html"
     # 需要用户登录
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from .models import Favorite
+        
+        # 获取当前用户的所有收藏
+        favorites = Favorite.objects.filter(user=self.request.user).order_by('-created_at')
+        
+        # 为每个收藏获取对应的对象信息
+        favorite_list = []
+        for favorite in favorites:
+            favorite_data = {
+                'favorite': favorite,
+                'target_name': '未知',
+                'target_image': None,
+                'target_url': '#',
+                'target_type_display': favorite.get_target_type_display(),
+            }
+            
+            # 根据target_type获取对应的对象信息
+            if favorite.target_type == 'scenic':
+                try:
+                    from apps.scenic.models import ScenicSpot
+                    target = ScenicSpot.objects.get(pk=favorite.target_id)
+                    favorite_data['target_name'] = target.name
+                    favorite_data['target_image'] = target.cover_image.url if target.cover_image else None
+                    favorite_data['target_url'] = f'/scenic/detail/{target.id}/'
+                except:
+                    favorite_data['target_name'] = f'景点 #{favorite.target_id} (已删除)'
+            elif favorite.target_type == 'route':
+                try:
+                    from apps.routes.models import Route
+                    target = Route.objects.get(pk=favorite.target_id)
+                    favorite_data['target_name'] = target.name
+                    favorite_data['target_image'] = target.cover_image.url if target.cover_image else None
+                    favorite_data['target_url'] = f'/routes/detail/{target.id}/'
+                except:
+                    favorite_data['target_name'] = f'路线 #{favorite.target_id} (已删除)'
+            else:
+                # 处理其他类型（如未来可能添加的酒店等）
+                favorite_data['target_name'] = f'{favorite.get_target_type_display()} #{favorite.target_id}'
+            
+            favorite_list.append(favorite_data)
+        
+        context['favorite_list'] = favorite_list
+        return context
 
 
 class UserReviewsView(LoginRequiredMixin, TemplateView):  # 添加 LoginRequiredMixin

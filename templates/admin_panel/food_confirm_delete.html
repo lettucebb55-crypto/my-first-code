@@ -1,0 +1,94 @@
+{% extends "admin_panel/layout.html" %}
+{% block page_title %}{{ page_title }}{% endblock %}
+{% block page_header %}删除美食{% endblock %}
+{% block menu_foods %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>确认删除</h1>
+        <p>此操作不可恢复，请谨慎操作。</p>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'admin_panel:foods_list' %}" class="btn-secondary">
+            <i class="fas fa-arrow-left"></i> 返回列表
+        </a>
+    </div>
+</div>
+
+<div class="delete-confirm-container">
+    <div class="delete-warning">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h2>确定要删除这个美食吗？</h2>
+        <p>美食名称：<strong>{{ object.name }}</strong></p>
+        <p>删除后，该美食的所有相关数据将被永久删除，此操作无法撤销。</p>
+    </div>
+
+    <form method="post" class="delete-form">
+        {% csrf_token %}
+        <div class="form-actions">
+            <button type="submit" class="btn-danger">
+                <i class="fas fa-trash-alt"></i> 确认删除
+            </button>
+            <a href="{% url 'admin_panel:foods_list' %}" class="btn-secondary">
+                <i class="fas fa-times"></i> 取消
+            </a>
+        </div>
+    </form>
+</div>
+
+{% block extra_css %}
+<style>
+.delete-confirm-container {
+    background: white;
+    border-radius: var(--radius-md);
+    padding: 32px;
+    box-shadow: var(--shadow-sm);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.delete-warning {
+    text-align: center;
+    padding: 24px;
+    background: #fef3c7;
+    border: 2px solid #fbbf24;
+    border-radius: var(--radius-sm);
+    margin-bottom: 24px;
+}
+
+.delete-warning i {
+    font-size: 48px;
+    color: #f59e0b;
+    margin-bottom: 16px;
+}
+
+.delete-warning h2 {
+    color: #92400e;
+    margin: 16px 0;
+}
+
+.delete-warning p {
+    color: #78350f;
+    margin: 8px 0;
+}
+
+.btn-danger {
+    background: #dc2626;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.btn-danger:hover {
+    background: #b91c1c;
+}
+</style>
+{% endblock %}
+{% endblock %}
+

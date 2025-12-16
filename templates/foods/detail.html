@@ -1,0 +1,200 @@
+{% extends 'common/base.html' %}
+{% load static %}
+
+{% block title %}{{ food.name }} - 美食文化 - 保定旅游网{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'index:index' %}">首页</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'foods:list' %}">美食文化</a></li>
+            <li class="breadcrumb-item active">{{ food.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="mb-3">
+                <h1 class="mb-2">{{ food.name }}</h1>
+                {% if food.english_name %}
+                <p class="text-muted fs-5"><em>{{ food.english_name }}</em></p>
+                {% endif %}
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    {% if food.is_hot %}
+                    <span class="badge bg-danger"><i class="fas fa-fire"></i> 热门</span>
+                    {% endif %}
+                    {% if food.is_traditional %}
+                    <span class="badge bg-warning"><i class="fas fa-flag"></i> 传统美食</span>
+                    {% endif %}
+                    {% if food.is_recommended %}
+                    <span class="badge bg-success"><i class="fas fa-star"></i> 推荐</span>
+                    {% endif %}
+                    <span class="text-warning ms-2">
+                        {% load index_tags %}
+                        {% with stars=food.rating|stars %}
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= stars.full %}
+                                    ★
+                                {% elif forloop.counter == stars.full|add:1 and stars.has_half %}
+                                    ★
+                                {% else %}
+                                    ☆
+                                {% endif %}
+                            {% endfor %}
+                        {% endwith %}
+                    </span>
+                    <span class="fw-bold">{{ food.rating|floatformat:1 }}</span>
+                    <span class="text-muted">({{ food.views_count }} 次浏览)</span>
+                </div>
+            </div>
+            
+            {% if food.cover_image %}
+            <img src="{{ food.cover_image.url }}" class="img-fluid rounded shadow mb-4" alt="{{ food.name }}" style="max-height: 500px; width: 100%; object-fit: cover;">
+            {% endif %}
+            
+            {% if food.images.exists %}
+            <div class="mb-4">
+                <h5 class="mb-3"><i class="fas fa-images text-primary me-2"></i>更多图片</h5>
+                <div class="row g-2">
+                    {% for image in food.images.all %}
+                    <div class="col-md-4">
+                        <img src="{{ image.image.url }}" class="img-fluid rounded shadow-sm" alt="{{ image.description|default:food.name }}" style="height: 150px; width: 100%; object-fit: cover;">
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-info-circle text-primary me-2"></i>美食介绍</h5>
+                    <p class="card-text">{{ food.description|linebreaks }}</p>
+                </div>
+            </div>
+            
+            {% if food.ingredients %}
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-carrot text-success me-2"></i>主要食材</h5>
+                    <p class="card-text">{{ food.ingredients|linebreaks }}</p>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if food.cooking_method %}
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-utensils text-danger me-2"></i>制作方法</h5>
+                    <p class="card-text">{{ food.cooking_method|linebreaks }}</p>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if food.cultural_background %}
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-book text-warning me-2"></i>文化背景</h5>
+                    <p class="card-text">{{ food.cultural_background|linebreaks }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if related_foods %}
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-th-large text-primary me-2"></i>相关美食</h5>
+                    <div class="row g-3 mt-3">
+                        {% for related in related_foods %}
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                {% if related.cover_image %}
+                                <img src="{{ related.cover_image.url }}" class="rounded me-3" alt="{{ related.name }}" style="width: 80px; height: 80px; object-fit: cover;">
+                                {% endif %}
+                                <div>
+                                    <h6 class="mb-1"><a href="{% url 'foods:detail' pk=related.id %}" class="text-decoration-none">{{ related.name }}</a></h6>
+                                    <small class="text-muted">{{ related.description|truncatewords:10 }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm sticky-top" style="top: 100px;">
+                <div class="card-header bg-primary text-white rounded-top">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>美食信息</h5>
+                </div>
+                <div class="card-body">
+                    {% if food.category %}
+                    <div class="mb-3">
+                        <strong><i class="fas fa-tag text-primary me-2"></i>分类：</strong>
+                        <span class="badge bg-primary">{{ food.category.name }}</span>
+                    </div>
+                    {% endif %}
+                    {% if food.price_range %}
+                    <div class="mb-3">
+                        <strong><i class="fas fa-yen-sign text-success me-2"></i>价格：</strong>
+                        <span class="text-danger fw-bold">{{ food.price_range }}</span>
+                    </div>
+                    {% endif %}
+                    {% if food.average_price %}
+                    <div class="mb-3">
+                        <strong><i class="fas fa-money-bill-wave text-success me-2"></i>平均价格：</strong>
+                        <span class="text-danger fw-bold">¥{{ food.average_price }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="mb-3">
+                        <strong><i class="fas fa-star text-warning me-2"></i>评分：</strong>
+                        <span class="text-warning">
+                            {% load index_tags %}
+                            {% with stars=food.rating|stars %}
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= stars.full %}
+                                        ★
+                                    {% elif forloop.counter == stars.full|add:1 and stars.has_half %}
+                                        ★
+                                    {% else %}
+                                        ☆
+                                    {% endif %}
+                                {% endfor %}
+                            {% endwith %}
+                        </span>
+                        <span class="fw-bold">{{ food.rating|floatformat:1 }}</span>
+                    </div>
+                    {% if food.get_tags_list %}
+                    <div class="mb-3">
+                        <strong><i class="fas fa-tags text-info me-2"></i>标签：</strong><br>
+                        {% for tag in food.get_tags_list %}
+                        <span class="badge bg-secondary me-1 mb-1">{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% if food.get_restaurants_list %}
+                    <div class="mb-3">
+                        <strong><i class="fas fa-store text-primary me-2"></i>推荐餐厅：</strong>
+                        <ul class="list-unstyled ms-3 mt-2">
+                            {% for restaurant in food.get_restaurants_list %}
+                            <li><i class="fas fa-utensils text-muted me-2"></i>{{ restaurant }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card border-0 shadow-sm mt-3">
+                <div class="card-body text-center">
+                    <a href="{% url 'foods:list' %}" class="btn btn-primary w-100 rounded-pill">
+                        <i class="fas fa-arrow-left me-2"></i>返回美食列表
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

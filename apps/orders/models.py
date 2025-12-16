@@ -40,6 +40,7 @@ class OrderDetail(models.Model):
     ITEM_TYPE_CHOICES = (
         ('scenic', '景点门票'),
         ('route', '路线报名'),
+        ('hotel', '酒店预订'),
     )
 
     order = models.ForeignKey(Order, related_name='details', on_delete=models.CASCADE, verbose_name="所属订单")
@@ -51,6 +52,10 @@ class OrderDetail(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="单价")
     quantity = models.PositiveIntegerField(default=1, verbose_name="数量")
     subtotal = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="小计")
+    
+    # 酒店预订时间字段（仅对酒店类型有效）
+    check_in_date = models.DateField(null=True, blank=True, verbose_name="入住日期")
+    check_out_date = models.DateField(null=True, blank=True, verbose_name="退房日期")
 
     class Meta:
         verbose_name = "订单明细"

@@ -7,7 +7,12 @@
         <!-- 左侧导航 -->
         <div class="col-lg-3">
              <div class="card">
-                <div class="card-body text-center">...</div>
+                <div class="card-body text-center">
+                    <img src="{% if user.avatar %}{{ user.avatar.url }}{% else %}{% static 'images/default-avatar.png' %}{% endif %}" 
+                         alt="头像" class="rounded-circle mb-2" style="width: 80px; height: 80px; object-fit: cover;">
+                    <h5 class="mb-0">{{ user.username }}</h5>
+                    <p class="text-muted small mb-0">{{ user.email }}</p>
+                </div>
                 <div class="list-group list-group-flush">
                     <a href="{% url 'users:home' %}" class="list-group-item list-group-item-action">个人中心</a>
                     <a href="{% url 'users:profile' %}" class="list-group-item list-group-item-action">信息管理</a>
@@ -25,34 +30,194 @@
                     <h5 class="mb-0">我的收藏</h5>
                 </div>
                 <div class="card-body">
-                    <!-- 收藏列表 (与景点列表类似) -->
+                    {% csrf_token %}
+                    {% if favorite_list %}
+                    <!-- 收藏列表 -->
                     <div class="row g-4">
-                        <div class="col-md-6">
-                            <div class="card h-100 shadow-sm">
-                                <img src="https://placehold.co/400x300/3498DB/FFFFFF?text=白洋淀" class="card-img-top" alt="白洋淀">
-                                <div class="card-body">
-                                    <h5 class="card-title">白洋淀</h5>
-                                    <p class="card-text text-muted small">景点</p>
-                                    <a href="#" class="btn btn-sm btn-outline-primary">查看详情</a>
-                                    <button class="btn btn-sm btn-outline-danger">取消收藏</button>
+                        {% for item in favorite_list %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100 shadow-sm favorite-item" data-favorite-id="{{ item.favorite.id }}" data-target-id="{{ item.favorite.target_id }}" data-target-type="{{ item.favorite.target_type }}">
+                                {% if item.target_image %}
+                                <img src="{{ item.target_image }}" class="card-img-top" alt="{{ item.target_name }}" style="height: 200px; object-fit: cover;">
+                                {% else %}
+                                <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                                    <i class="fas fa-image fa-3x text-white-50"></i>
+                                </div>
+                                {% endif %}
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title">{{ item.target_name }}</h5>
+                                    <p class="card-text text-muted small mb-2">
+                                        <span class="badge bg-primary">{{ item.target_type_display }}</span>
+                                    </p>
+                                    <div class="mt-auto">
+                                        <a href="{{ item.target_url }}" class="btn btn-sm btn-outline-primary w-100 mb-2">查看详情</a>
+                                        <button class="btn btn-sm btn-outline-danger w-100 unfavorite-btn" 
+                                                data-target-id="{{ item.favorite.target_id }}" 
+                                                data-target-type="{{ item.favorite.target_type }}">
+                                            <i class="far fa-heart"></i> 取消收藏
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                         <div class="col-md-6">
-                            <div class="card h-100 shadow-sm">
-                                <img src="https://placehold.co/400x300/2ECC71/FFFFFF?text=保定2日游" class="card-img-top" alt="保定2日游">
-                                <div class="card-body">
-                                    <h5 class="card-title">保定历史文化2日游</h5>
-                                    <p class="card-text text-muted small">路线</p>
-                                    <a href="#" class="btn btn-sm btn-outline-primary">查看详情</a>
-                                    <button class="btn btn-sm btn-outline-danger">取消收藏</button>
-                                </div>
-                            </div>
-                        </div>
+                        {% endfor %}
                     </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="far fa-heart fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">暂无收藏内容</p>
+                        <a href="{% url 'scenic:list' %}" class="btn btn-primary">去逛逛</a>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 确保jQuery已加载
+if (typeof jQuery === 'undefined') {
+    console.error('jQuery未加载，请检查base.html中的jQuery引用');
+} else {
+    $(document).ready(function() {
+        // 获取CSRF token的辅助函数
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // 获取CSRF token（多种方式尝试）
+        function getCsrfToken() {
+            // 方法1: 从隐藏input获取
+            var token = $('[name=csrfmiddlewaretoken]').val();
+            if (token) return token;
+            
+            // 方法2: 从meta标签获取
+            var metaToken = $('meta[name=csrf-token]').attr('content');
+            if (metaToken) return metaToken;
+            
+            // 方法3: 使用全局函数（如果main.js中有）
+            if (typeof window.getCSRFToken === 'function') {
+                token = window.getCSRFToken();
+                if (token) return token;
+            }
+            
+            // 方法4: 从cookie获取
+            token = getCookie('csrftoken');
+            return token;
+        }
+        
+        // 取消收藏功能
+        $(document).on('click', '.unfavorite-btn', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            var $btn = $(this);
+            var targetId = $btn.data('target-id');
+            var targetType = $btn.data('target-type');
+            var $card = $btn.closest('.favorite-item');
+            
+            console.log('点击取消收藏按钮，targetId:', targetId, 'targetType:', targetType);
+            
+            if (!targetId || !targetType) {
+                alert('无法获取收藏信息，请刷新页面后重试');
+                return false;
+            }
+            
+            if (!confirm('确定要取消收藏吗？')) {
+                return false;
+            }
+            
+            // 禁用按钮，防止重复点击
+            $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>取消中...');
+            
+            // 获取CSRF token
+            var csrfToken = getCsrfToken();
+            console.log('CSRF Token:', csrfToken ? '已获取' : '未获取');
+            
+            if (!csrfToken) {
+                alert('无法获取安全令牌，请刷新页面后重试');
+                $btn.prop('disabled', false).html('<i class="far fa-heart"></i> 取消收藏');
+                return false;
+            }
+            
+            // 发送AJAX请求取消收藏（将数据作为URL查询参数传递）
+            $.ajax({
+                url: '/api/v1/users/favorites/?target_id=' + encodeURIComponent(targetId) + '&target_type=' + encodeURIComponent(targetType),
+                type: 'DELETE',
+                headers: {
+                    'X-CSRFToken': csrfToken
+                },
+                dataType: 'json',
+                success: function(response) {
+                    console.log('取消收藏成功:', response);
+                    if (response && response.status === 'success') {
+                        // 淡出并移除卡片
+                        $card.fadeOut(300, function() {
+                            $(this).remove();
+                            // 如果所有收藏都被删除了，显示空状态
+                            if ($('.favorite-item').length === 0) {
+                                location.reload();
+                            }
+                        });
+                    } else {
+                        alert('取消收藏失败：' + (response.message || '未知错误'));
+                        $btn.prop('disabled', false).html('<i class="far fa-heart"></i> 取消收藏');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('取消收藏失败:', {
+                        status: xhr.status,
+                        statusText: xhr.statusText,
+                        responseText: xhr.responseText,
+                        error: error
+                    });
+                    
+                    var errorMsg = '取消收藏失败';
+                    try {
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        } else if (xhr.responseText) {
+                            var response = JSON.parse(xhr.responseText);
+                            if (response.message) {
+                                errorMsg = response.message;
+                            }
+                        }
+                    } catch (e) {
+                        // 解析失败，使用默认错误信息
+                    }
+                    
+                    if (xhr.status === 403) {
+                        errorMsg = '无权操作或安全令牌无效';
+                    } else if (xhr.status === 404) {
+                        errorMsg = '收藏记录不存在';
+                    } else if (xhr.status === 0) {
+                        errorMsg = '网络错误，请检查网络连接';
+                    } else if (xhr.status === 500) {
+                        errorMsg = '服务器错误，请稍后重试';
+                    }
+                    
+                    alert(errorMsg);
+                    $btn.prop('disabled', false).html('<i class="far fa-heart"></i> 取消收藏');
+                }
+            });
+            
+            return false;
+        });
+    });
+}
+</script>
 {% endblock %}
