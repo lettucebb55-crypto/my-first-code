@@ -54,3 +54,20 @@ class RoomType(models.Model):
     
     def __str__(self):
         return f"{self.hotel.name} - {self.name}"
+
+
+class HotelImage(models.Model):
+    """
+    酒店图片模型 - 支持酒店多张图片展示
+    """
+    hotel = models.ForeignKey(Hotel, related_name='images', on_delete=models.CASCADE, verbose_name="所属酒店")
+    image = models.ImageField(upload_to='hotel_images/', verbose_name="图片")
+    title = models.CharField(max_length=100, blank=True, null=True, verbose_name="图片标题")
+    description = models.TextField(blank=True, null=True, verbose_name="图片描述")
+    display_order = models.PositiveIntegerField(default=0, verbose_name="显示顺序（数字越小越靠前）")
+    created_at = models.DateTimeField(default=timezone.now, verbose_name="创建时间")
+    
+    class Meta:
+        verbose_name = "酒店图片"
+        verbose_name_plural = verbose_name
+        ordering = ['hotel', 'display_order', '-created_at']

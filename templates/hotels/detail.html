@@ -43,12 +43,71 @@
     <div class="row g-5">
         <!-- 2. 左侧：图文区 + 详情 -->
         <div class="col-lg-8">
-            <!-- 封面图 -->
+            <!-- 封面图和图片展示 -->
             <section class="mb-4">
                 {% if hotel.cover_image %}
-                <img src="{{ hotel.cover_image.url }}" class="img-fluid rounded shadow-sm w-100" alt="{{ hotel.name }}" style="height: 400px; object-fit: cover;">
+                <img src="{{ hotel.cover_image.url }}" class="img-fluid rounded shadow-sm w-100 mb-3" alt="{{ hotel.name }}" style="height: 400px; object-fit: cover;">
                 {% else %}
-                <img src="https://placehold.co/800x400/10b981/FFFFFF?text={{ hotel.name }}" class="img-fluid rounded shadow-sm w-100" alt="{{ hotel.name }}" style="height: 400px; object-fit: cover;">
+                <img src="https://placehold.co/800x400/10b981/FFFFFF?text={{ hotel.name }}" class="img-fluid rounded shadow-sm w-100 mb-3" alt="{{ hotel.name }}" style="height: 400px; object-fit: cover;">
+                {% endif %}
+                
+                <!-- 酒店图片展示 -->
+                {% if hotel_images %}
+                <div class="card border-0 shadow-sm rounded-lg mt-3">
+                    <div class="card-header bg-white border-bottom-0 py-3">
+                        <h5 class="mb-0">
+                            <i class="fas fa-images text-primary me-2"></i>酒店图片
+                            <small class="text-muted">(共 {{ hotel_images|length }} 张)</small>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            {% for hotel_image in hotel_images %}
+                            <div class="col-md-4 col-sm-6">
+                                <div class="position-relative">
+                                    <img 
+                                        src="{{ hotel_image.image.url }}" 
+                                        class="img-fluid rounded shadow-sm w-100" 
+                                        alt="{% if hotel_image.title %}{{ hotel_image.title }}{% else %}酒店图片{% endif %}"
+                                        style="height: 200px; object-fit: cover; cursor: pointer;"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#imageModal{{ hotel_image.id }}"
+                                    >
+                                    {% if hotel_image.title %}
+                                    <div class="position-absolute bottom-0 start-0 end-0 bg-dark bg-opacity-50 text-white p-2 rounded-bottom">
+                                        <small>{{ hotel_image.title }}</small>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- 图片预览模态框 -->
+                                <div class="modal fade" id="imageModal{{ hotel_image.id }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">
+                                                    {% if hotel_image.title %}{{ hotel_image.title }}{% else %}酒店图片{% endif %}
+                                                </h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body text-center">
+                                                <img 
+                                                    src="{{ hotel_image.image.url }}" 
+                                                    class="img-fluid rounded" 
+                                                    alt="{% if hotel_image.title %}{{ hotel_image.title }}{% else %}酒店图片{% endif %}"
+                                                >
+                                                {% if hotel_image.description %}
+                                                <p class="mt-3 text-muted">{{ hotel_image.description }}</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
                 {% endif %}
             </section>
             

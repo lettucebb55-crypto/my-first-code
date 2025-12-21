@@ -20,6 +20,7 @@ urlpatterns = [
     path('checkins/', include('apps.checkins.urls')),  # 打卡签到模块
     path('foods/', include('apps.foods.urls')),  # 美食文化模块
     path('admin_panel/', include('apps.admin_panel.urls')),  # 您的自定义统计后台
+    path('ai-assistant/', include('apps.ai_assistant.urls')),  # AI助手模块
 
     # API 接口路由 (统一前缀 /api/v1/)
     path('api/v1/users/', include('apps.users.api_urls')),
@@ -30,6 +31,7 @@ urlpatterns = [
     path('api/v1/checkins/', include('apps.checkins.api_urls')),  # 打卡签到API
     path('api/v1/foods/', include('apps.foods.api_urls')),  # 美食文化API
     path('api/v1/comments/', include('apps.comments.api_urls')),  # 评论API
+    path('api/v1/ai-assistant/', include('apps.ai_assistant.api_urls')),  # AI助手API
 ]
 
 # 在开发模式下，允许Django服务静态文件和媒体文件

@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'apps.foods',       # 美食文化模块
     'apps.admin_panel', # 自定义后台
     'apps.index',       # 用于处理首页等
+    'apps.ai_assistant', # AI助手模块
 ]
 
 MIDDLEWARE = [
@@ -147,3 +148,12 @@ LOGOUT_REDIRECT_URL = '/'
 
 # 允许使用 GET 请求退出登录
 LOGOUT_ON_GET = True
+
+# AI助手配置
+# 是否使用真实AI API（False时使用规则引擎）
+USE_AI_API = False
+# AI服务提供商：'openai', 'qianfan', 'dashscope'
+AI_PROVIDER = 'openai'
+# OpenAI配置（如果使用OpenAI）
+OPENAI_API_KEY = ''  # 从环境变量读取：os.getenv('OPENAI_API_KEY', '')
+OPENAI_MODEL = 'gpt-3.5-turbo'  # 或 'gpt-4'

@@ -5,6 +5,7 @@ from django.shortcuts import redirect
 from django.db.models import Avg
 from django.template.response import TemplateResponse
 from django.utils import timezone
+from django.conf import settings
 from .models import Hotel
 from apps.comments.models import Comment
 
@@ -67,6 +68,9 @@ class HotelDetailView(View):
             # 获取房间类型
             room_types = hotel.room_types.filter(is_available=True).order_by('price')
             
+            # 获取酒店图片（按显示顺序排序，转换为列表以确保在模板中正确显示）
+            hotel_images = list(hotel.images.all().order_by('display_order', '-created_at'))
+            
             # 获取相关酒店（推荐的其他酒店）
             related_hotels = Hotel.objects.filter(
                 is_recommended=True
@@ -87,15 +91,26 @@ class HotelDetailView(View):
             else:
                 avg_rating = 0
             
+            # 确保hotel_images是列表格式
+            if not isinstance(hotel_images, list):
+                hotel_images = list(hotel_images)
+            
             context = {
                 'hotel': hotel,
                 'room_types': room_types,
+                'hotel_images': hotel_images,
                 'related_hotels': related_hotels,
                 'comments': comments,
                 'avg_rating': avg_rating,
                 'today': timezone.now().date(),
                 'page_title': f"{hotel.name} - 酒店详情 - 保定旅游网"
             }
+            
+            # 调试信息（开发环境）
+            if settings.DEBUG:
+                print(f"[DEBUG] 酒店: {hotel.name}, 图片数量: {len(hotel_images)}")
+                for img in hotel_images:
+                    print(f"  - 图片URL: {img.image.url}")
             
         except Hotel.DoesNotExist:
             context = {
