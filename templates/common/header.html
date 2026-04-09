@@ -59,6 +59,14 @@
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarUserDropdown">
                                 <li><a class="dropdown-item" href="{% url 'users:home' %}">个人中心</a></li>
                                 <li><a class="dropdown-item" href="{% url 'users:orders' %}">我的订单</a></li>
+                                {% if user.is_staff %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item d-flex align-items-center" href="{% url 'admin_panel:index' %}">
+                                        <i class="fas fa-tools me-2 text-primary"></i> 后台管理
+                                    </a>
+                                </li>
+                                {% endif %}
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="{% url 'users:logout' %}">退出登录</a></li>
                             </ul>

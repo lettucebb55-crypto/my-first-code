@@ -122,7 +122,7 @@ AI助手是保定旅游网的核心智能功能模块，旨在为用户提供个
 {
   "user": 1,
   "query_type": "general",
-  "scenic_spots": "[{\"id\": 1, \"name\": \"白洋淀\", \"address\": \"保定市安新县\", ...}]",
+  "scenic_spots": "[{\"id\": 1, \"name\": \"保定植物园\", \"address\": \"保定市竞秀区\", ...}]",
   "user_input": "希望行程不要太紧张",
   "route_plan": "## 一日游路线规划\n\n...",
   "transport_plan": "## 交通规划\n\n...",
@@ -155,7 +155,7 @@ X-CSRFToken: <csrf_token>
 **请求体：**
 ```json
 {
-  "scenic_spots": ["白洋淀", "直隶总督署", "古莲花池"],
+  "scenic_spots": ["保定植物园", "直隶总督署", "古莲花池"],
   "query_type": "general",
   "user_input": "希望行程不要太紧张，适合老人和小孩"
 }
@@ -177,11 +177,11 @@ X-CSRFToken: <csrf_token>
     "scenic_spots": [
       {
         "id": 1,
-        "name": "白洋淀",
+        "name": "保定植物园",
         "address": "保定市安新县",
         "ticket_price": "50.00",
         "open_time": "08:00-18:00",
-        "description": "白洋淀是华北地区最大的淡水湖...",
+        "description": "保定植物园是保定市知名城市生态公园...",
         "latitude": 38.9,
         "longitude": 115.9
       }
@@ -235,7 +235,7 @@ X-CSRFToken: <csrf_token>
       "id": 123,
       "query_type": "general",
       "query_type_display": "综合规划",
-      "user_input": "规划白洋淀、直隶总督署的旅游",
+      "user_input": "规划保定植物园、直隶总督署的旅游",
       "created_at": "2025-01-15 10:30:00",
       "is_favorite": false
     }
@@ -261,7 +261,7 @@ X-CSRFToken: <csrf_token>
     "id": 123,
     "query_type": "general",
     "query_type_display": "综合规划",
-    "user_input": "规划白洋淀、直隶总督署的旅游",
+    "user_input": "规划保定植物园、直隶总督署的旅游",
     "scenic_spots": [...],
     "route_plan": "## 一日游路线规划\n\n...",
     "transport_plan": "## 交通规划\n\n...",
@@ -488,7 +488,7 @@ AI_PROVIDER = 'openai'  # 'openai', 'qianfan', 'dashscope'
 ### 示例1：单景点一日游
 
 **输入：**
-- 景点：白洋淀
+- 景点：保定植物园
 - 规划类型：综合规划
 
 **输出：**
@@ -499,7 +499,7 @@ AI_PROVIDER = 'openai'  # 'openai', 'qianfan', 'dashscope'
 ### 示例2：多景点多日游
 
 **输入：**
-- 景点：白洋淀, 直隶总督署, 古莲花池
+- 景点：保定植物园, 直隶总督署, 古莲花池
 - 规划类型：综合规划
 - 额外需求：希望行程不要太紧张
 

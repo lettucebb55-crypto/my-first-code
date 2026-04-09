@@ -58,19 +58,19 @@ class Command(BaseCommand):
                 ]
             },
             {
-                'name': '白洋淀1日休闲游',
+                'name': '保定植物园1日休闲游',
                 'category': category2,
                 'price': 268.00,
                 'days': 1,
                 'group_size': 30,
                 'deadline': timezone.now().date() + timedelta(days=3),
-                'itinerary_summary': '畅游白洋淀，欣赏荷花美景，体验水乡风情。',
-                'cost_include': '景点门票、船票、午餐、导游服务、旅游保险',
+                'itinerary_summary': '畅游保定植物园，打卡温室花卉馆、林荫步道与亲子活动区。',
+                'cost_include': '景点门票、午餐、导游服务、旅游保险',
                 'cost_exclude': '晚餐、个人消费、往返交通',
                 'notes': '请提前3天报名，建议携带防晒用品。',
                 'departure_city': '保定',
                 'meeting_point': '保定汽车站',
-                'tags': '自然,休闲,1日,荷花',
+                'tags': '自然,休闲,1日,花卉',
                 'rating': 4.9,
                 'is_hot': True,
                 'is_recommended': True,
@@ -78,8 +78,8 @@ class Command(BaseCommand):
                 'itineraries': [
                     {
                         'day_number': 1,
-                        'title': '白洋淀一日游',
-                        'description': '乘船游览白洋淀，观赏荷花，体验水乡文化，品尝当地特色美食。'
+                        'title': '保定植物园一日游',
+                        'description': '游览保定植物园主景区，参观温室展馆与主题花园，体验轻松休闲的城市微度假。'
                     },
                 ]
             },
@@ -202,8 +202,122 @@ class Command(BaseCommand):
                     },
                     {
                         'day_number': 2,
-                        'title': '白洋淀',
-                        'description': '游览白洋淀，观赏荷花，体验水乡文化，参与亲子活动。'
+                        'title': '保定植物园',
+                        'description': '游览保定植物园，参与自然科普与亲子互动活动，感受城市生态之美。'
+                    },
+                ]
+            },
+            {
+                'name': '保定古城夜游1日体验',
+                'category': category1,
+                'price': 238.00,
+                'days': 1,
+                'group_size': 25,
+                'deadline': timezone.now().date() + timedelta(days=2),
+                'itinerary_summary': '夜游保定古城核心地标，感受历史建筑夜景与地道小吃文化。',
+                'cost_include': '讲解服务、夜游接驳、小吃体验券、旅游保险',
+                'cost_exclude': '正餐、个人消费、往返交通',
+                'notes': '请提前2天报名，建议穿舒适步行鞋。',
+                'departure_city': '保定',
+                'meeting_point': '古莲花池南门',
+                'tags': '历史,夜游,古城,1日',
+                'rating': 4.7,
+                'is_hot': True,
+                'is_recommended': True,
+                'display_order': 7,
+                'itineraries': [
+                    {
+                        'day_number': 1,
+                        'title': '古城夜景 + 非遗街区',
+                        'description': '傍晚打卡古城墙周边夜景，随后步行游览非遗街区，体验保定本地夜市与传统手作文化。'
+                    },
+                ]
+            },
+            {
+                'name': '白石山云海2日徒步游',
+                'category': category2,
+                'price': 699.00,
+                'days': 2,
+                'group_size': 20,
+                'deadline': timezone.now().date() + timedelta(days=6),
+                'itinerary_summary': '深入白石山核心景区，体验轻徒步、观云海与高山摄影。',
+                'cost_include': '景点门票、住宿（1晚）、早餐、导游服务、旅游保险',
+                'cost_exclude': '午餐、晚餐、个人消费、往返交通',
+                'notes': '请提前6天报名，建议携带防风外套和登山杖。',
+                'departure_city': '保定',
+                'meeting_point': '保定火车站东广场',
+                'tags': '自然,徒步,云海,2日',
+                'rating': 4.8,
+                'is_hot': True,
+                'is_recommended': True,
+                'display_order': 8,
+                'itineraries': [
+                    {
+                        'day_number': 1,
+                        'title': '白石山轻徒步',
+                        'description': '上午入园后进行轻徒步路线，下午前往观景台拍摄山景，晚上入住景区周边酒店。'
+                    },
+                    {
+                        'day_number': 2,
+                        'title': '日出观景 + 返回保定',
+                        'description': '清晨观云海日出，早餐后自由活动，午后统一返程。'
+                    },
+                ]
+            },
+            {
+                'name': '保定植物园亲子科普1日游',
+                'category': category3,
+                'price': 199.00,
+                'days': 1,
+                'group_size': 30,
+                'deadline': timezone.now().date() + timedelta(days=3),
+                'itinerary_summary': '围绕植物园设计亲子科普任务，边玩边学，轻松不赶路。',
+                'cost_include': '景点门票、亲子研学手册、讲解服务、旅游保险',
+                'cost_exclude': '正餐、个人消费、往返交通',
+                'notes': '请提前3天报名，建议携带水壶与防晒用品。',
+                'departure_city': '保定',
+                'meeting_point': '保定植物园东门游客中心',
+                'tags': '亲子,科普,植物园,1日',
+                'rating': 4.9,
+                'is_hot': True,
+                'is_recommended': True,
+                'display_order': 9,
+                'itineraries': [
+                    {
+                        'day_number': 1,
+                        'title': '温室探索 + 自然课堂',
+                        'description': '上午探索温室花卉馆，下午参与自然课堂和亲子互动任务，完成打卡后返程。'
+                    },
+                ]
+            },
+            {
+                'name': '易县红色文化2日研学游',
+                'category': category1,
+                'price': 620.00,
+                'days': 2,
+                'group_size': 35,
+                'deadline': timezone.now().date() + timedelta(days=5),
+                'itinerary_summary': '融合红色教育与历史文化讲解，适合团队和学生群体研学。',
+                'cost_include': '景点门票、住宿（1晚）、早餐、讲解服务、旅游保险',
+                'cost_exclude': '午餐、晚餐、个人消费、往返交通',
+                'notes': '请提前5天报名，建议携带学生证或团体证明。',
+                'departure_city': '保定',
+                'meeting_point': '保定客运中心',
+                'tags': '历史,红色,研学,2日',
+                'rating': 4.7,
+                'is_hot': True,
+                'is_recommended': True,
+                'display_order': 10,
+                'itineraries': [
+                    {
+                        'day_number': 1,
+                        'title': '狼牙山红色教育基地',
+                        'description': '参观狼牙山红色教育基地，开展主题学习活动，晚间进行研学复盘。'
+                    },
+                    {
+                        'day_number': 2,
+                        'title': '清西陵历史文化研学',
+                        'description': '结合清西陵讲解进行历史文化拓展，午后返程。'
                     },
                 ]
             },

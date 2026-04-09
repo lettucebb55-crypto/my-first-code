@@ -14,7 +14,7 @@ class SpotListView(View):
         # request.GET.get('category')
         # request.GET.get('sort')
         # request.GET.get('page')
-        spots = [{"id": 1, "name": "白洋淀", "price": "100.00", "rating": 4.8, "image": "/media/placeholder.jpg"}]
+        spots = [{"id": 1, "name": "保定植物园", "price": "30.00", "rating": 4.8, "image": "/media/placeholder.jpg"}]
         return JsonResponse({"status": "success", "data": spots, "total": 1})
 
 class SpotDetailView(View):
@@ -22,11 +22,11 @@ class SpotDetailView(View):
         # 获取景点详情
         spot_detail = {
             "id": pk,
-            "name": "白洋淀",
-            "price": "100.00",
-            "address": "保定市安新县",
+            "name": "保定植物园",
+            "price": "30.00",
+            "address": "保定市竞秀区",
             "open_time": "08:00-18:00",
-            "description": "白洋淀是...",
+            "description": "保定植物园绿化覆盖率高，适合家庭休闲、拍照打卡与科普游览。",
             "images": [{"url": "/media/placeholder.jpg"}],
             "reviews": []
         }

@@ -1,6 +1,6 @@
 from django.views.generic import TemplateView, ListView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.db.models import Count, Q, Sum
+from django.db.models import Avg, Count, Q, Sum
 from django.utils import timezone
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect
@@ -17,6 +17,7 @@ from apps.hotels.models import Hotel
 from apps.news.models import News, NewsCategory
 from apps.comments.models import Comment
 from apps.foods.models import Food, FoodCategory
+from apps.ai_assistant.models import AIQuery
 
 # 导入表单
 from .forms import ScenicSpotForm, RouteForm, HotelForm, NewsForm, UserForm, OrderStatusForm, FoodForm
@@ -35,38 +36,141 @@ class AdminIndexView(LoginRequiredMixin, StaffRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['page_title'] = '数据概览'
+        context['page_title'] = '数据看板'
 
         # 1. 基础数据统计
-        context['total_users'] = CustomUser.objects.count()
-        context['total_orders'] = Order.objects.count()
-        context['pending_orders'] = Order.objects.filter(status='pending').count()
-        context['total_scenic'] = ScenicSpot.objects.count()
-        context['total_routes'] = Route.objects.count()
-        context['total_hotels'] = Hotel.objects.count()
-        context['total_news'] = News.objects.count()
-        context['total_foods'] = Food.objects.count()
+        total_users = CustomUser.objects.count()
+        total_orders = Order.objects.count()
+        pending_orders = Order.objects.filter(status='pending').count()
+        total_scenic = ScenicSpot.objects.count()
+        total_routes = Route.objects.count()
+        total_hotels = Hotel.objects.count()
+        total_news = News.objects.count()
+        total_foods = Food.objects.count()
+        total_ai_queries = AIQuery.objects.count()
+
+        context['total_users'] = total_users
+        context['total_orders'] = total_orders
+        context['pending_orders'] = pending_orders
+        context['total_scenic'] = total_scenic
+        context['total_routes'] = total_routes
+        context['total_hotels'] = total_hotels
+        context['total_news'] = total_news
+        context['total_foods'] = total_foods
 
         # 今日预订
         today = timezone.now().date()
-        context['today_orders'] = Order.objects.filter(created_at__date=today).count()
+        today_orders = Order.objects.filter(created_at__date=today).count()
+        context['today_orders'] = today_orders
 
         # 总收入统计
-        context['total_revenue'] = Order.objects.filter(status__in=['paid', 'completed']).aggregate(
+        total_revenue = Order.objects.filter(status__in=['paid', 'completed']).aggregate(
             total=Sum('total_amount')
         )['total'] or 0
+        context['total_revenue'] = total_revenue
 
-        # 2. 热门排行
+        # 2. 当期各模块数据覆盖情况（圆形进度，仿游戏开发管理系统）
+        # 目标参考值：景点20、路线15、酒店10、订单100、用户50、AI查询200
+        def _pct(val, target):
+            return min(100, int((val / target * 100) if target > 0 else 0))
+
+        context['module_progress'] = [
+            {'name': '景点管理', 'pct': _pct(total_scenic, 20), 'color': '#22c55e'},
+            {'name': '路线管理', 'pct': _pct(total_routes, 15), 'color': '#06b6d4'},
+            {'name': '酒店管理', 'pct': _pct(total_hotels, 10), 'color': '#f59e0b'},
+            {'name': '订单管理', 'pct': _pct(total_orders, 100), 'color': '#ef4444'},
+            {'name': '用户管理', 'pct': _pct(total_users, 50), 'color': '#8b5cf6'},
+            {'name': 'AI助手', 'pct': _pct(total_ai_queries, 200), 'color': '#ec4899'},
+        ]
+
+        # 3. 各模块预订/使用量（柱状图数据，仿程序员完成情况）
+        top_scenic_by_order = list(
+            OrderDetail.objects.filter(item_type='scenic')
+            .values('item_name')
+            .annotate(cnt=Count('id'))
+            .order_by('-cnt')[:16]
+        )
+        cnts = [x['cnt'] for x in top_scenic_by_order]
+        max_cnt = max(cnts, default=1)
+        business_bars = []
+        for i, item in enumerate(top_scenic_by_order, 1):
+            pct = min(100, int(item['cnt'] / max_cnt * 100)) if max_cnt > 0 else 0
+            business_bars.append({
+                'label': f"景点{i}" if len(item['item_name']) > 12 else item['item_name'][:12],
+                'value': item['cnt'],
+                'pct': max(20, pct),  # 最小20%以便显示
+            })
+        # 不足16条时用路线、酒店补充
+        if len(business_bars) < 16:
+            route_items = list(
+                OrderDetail.objects.filter(item_type='route')
+                .values('item_name')
+                .annotate(cnt=Count('id'))
+                .order_by('-cnt')[:16 - len(business_bars)]
+            )
+            for i, item in enumerate(route_items):
+                pct = min(100, int(item['cnt'] / max_cnt * 100)) if max_cnt > 0 else 0
+                business_bars.append({
+                    'label': f"路线{i+1}" if len(item['item_name']) > 12 else item['item_name'][:12],
+                    'value': item['cnt'],
+                    'pct': max(20, pct),
+                })
+        while len(business_bars) < 16:
+            business_bars.append({'label': f"项目{len(business_bars)+1}", 'value': 0, 'pct': 20})
+        context['business_bars'] = business_bars[:16]
+
+        # 4. 景点综合排名（仿游戏综合排名）
+        # 通过订单明细统计各景点的订单数
+        spot_order_map = dict(
+            OrderDetail.objects.filter(item_type='scenic')
+            .values('item_id')
+            .annotate(cnt=Count('id'))
+            .values_list('item_id', 'cnt')
+        )
+        ranking_list = []
+        for i, spot in enumerate(ScenicSpot.objects.order_by('-rating', '-views_count')[:7], 1):
+            order_cnt = spot_order_map.get(spot.id, 0)
+            score = min(100, int(float(spot.rating) * 10) + order_cnt * 2)
+            ranking_list.append({
+                'rank': i,
+                'name': spot.name,
+                'type': spot.category.name if spot.category else '景点',
+                'extra': f'{order_cnt}笔订单',
+                'score': score,
+            })
+        context['ranking_list'] = ranking_list
+
+        # 5. 景点评分与订单分布（散点图）
+        scatter_data = []
+        for spot in ScenicSpot.objects.all()[:20]:
+            order_cnt = spot_order_map.get(spot.id, 0)
+            scatter_data.append({
+                'x': order_cnt,
+                'y': float(spot.rating),
+                'name': spot.name[:8] if len(spot.name) > 8 else spot.name,
+            })
+        context['scatter_data'] = scatter_data
+
+        # 6. 底部KPI
+        avg_rating = ScenicSpot.objects.aggregate(avg=Avg('rating'))['avg'] or 5.0
+        comment_count = Comment.objects.filter(is_deleted=False).count()
+        context['bottom_kpis'] = [
+            {'label': '累计订单数', 'value': total_orders, 'unit': '单'},
+            {'label': '累计用户数', 'value': total_users, 'unit': '人'},
+            {'label': '今日订单', 'value': today_orders, 'unit': '单'},
+            {'label': '用户满意度', 'value': f'{float(avg_rating) * 20:.1f}', 'unit': '%'},
+            {'label': '累计评价', 'value': comment_count, 'unit': '条'},
+        ]
+
+        # 7. 热门排行（保留原有）
         top_spots = OrderDetail.objects.filter(item_type='scenic') \
             .values('item_name') \
             .annotate(order_count=Count('id')) \
             .order_by('-order_count')[:5]
-
         top_routes = OrderDetail.objects.filter(item_type='route') \
             .values('item_name') \
             .annotate(order_count=Count('id')) \
             .order_by('-order_count')[:5]
-
         context['top_spots'] = top_spots
         context['top_routes'] = top_routes
 

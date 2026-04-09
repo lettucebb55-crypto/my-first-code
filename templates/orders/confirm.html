@@ -55,21 +55,6 @@
 
                     <hr>
 
-                    <!-- 联系人信息 -->
-                    <h5 class="mb-3">联系人信息</h5>
-                    <ul class="list-group mb-3">
-                        <li class="list-group-item d-flex justify-content-between">
-                            <span>姓名：</span>
-                            <strong>{{ contact_name|default:"未填写" }}</strong>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between">
-                            <span>手机号：</span>
-                            <strong>{{ contact_phone|default:"未填写" }}</strong>
-                        </li>
-                    </ul>
-
-                    <hr>
-
                     <!-- 价格总计 -->
                     <div class="d-flex justify-content-end mb-4">
                         <h4 class="mb-0">总计：<span class="text-danger fw-bold">¥{{ total }}</span></h4>
@@ -80,14 +65,13 @@
                     </div>
                     {% endif %}
 
-                    <!-- 提交按钮 -->
-                    <form action="{% url 'orders:create' %}" method="POST">
+                    <!-- 订单提交表单 -->
+                    {% if item %}
+                    <form action="{% url 'orders:create' %}" method="POST" id="orderForm" onsubmit="return validateContactInfo()">
                         {% csrf_token %}
                         <input type="hidden" name="item_id" value="{{ item_id }}">
                         <input type="hidden" name="item_type" value="{{ item_type }}">
                         <input type="hidden" name="quantity" value="{{ quantity }}">
-                        <input type="hidden" name="contact_name" value="{{ contact_name }}">
-                        <input type="hidden" name="contact_phone" value="{{ contact_phone }}">
                         {% if item_type == 'hotel' and check_in_date and check_out_date %}
                         <input type="hidden" name="check_in_date" value="{{ check_in_date }}">
                         <input type="hidden" name="check_out_date" value="{{ check_out_date }}">
@@ -98,11 +82,67 @@
                         {% if item_type == 'route' and booking_date %}
                         <input type="hidden" name="booking_date" value="{{ booking_date }}">
                         {% endif %}
+                        
+                        <!-- 联系人信息 -->
+                        <h5 class="mb-3">联系人信息 <span class="text-danger">*</span></h5>
+                        {% if need_contact_info %}
+                        <div class="alert alert-info mb-3">
+                            <i class="fas fa-info-circle"></i> 请填写联系人信息，以便我们与您联系。
+                        </div>
+                        {% endif %}
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="contact_name" class="form-label fw-bold">联系人姓名 <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="contact_name" name="contact_name" 
+                                           value="{{ contact_name }}" placeholder="请输入联系人姓名" required>
+                                </div>
+                                <div class="mb-0">
+                                    <label for="contact_phone" class="form-label fw-bold">联系人手机号 <span class="text-danger">*</span></label>
+                                    <input type="tel" class="form-control" id="contact_phone" name="contact_phone" 
+                                           value="{{ contact_phone }}" placeholder="请输入11位手机号" 
+                                           pattern="[0-9]{11}" maxlength="11" required>
+                                    <small class="form-text text-muted">请输入11位手机号码</small>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <p class="text-muted small">点击"确认提交"将为您创建订单，请在30分钟内完成支付。</p>
                         <button type="submit" class="btn btn-danger btn-lg w-100">
                             确认提交并支付
                         </button>
                     </form>
+                    {% endif %}
+                    
+                    <script>
+                        // 验证联系人信息
+                        function validateContactInfo() {
+                            const contactName = document.getElementById('contact_name').value.trim();
+                            const contactPhone = document.getElementById('contact_phone').value.trim();
+                            
+                            if (!contactName) {
+                                alert('请输入联系人姓名');
+                                document.getElementById('contact_name').focus();
+                                return false;
+                            }
+                            
+                            if (!contactPhone) {
+                                alert('请输入联系人手机号');
+                                document.getElementById('contact_phone').focus();
+                                return false;
+                            }
+                            
+                            // 验证手机号格式（11位数字）
+                            const phonePattern = /^[0-9]{11}$/;
+                            if (!phonePattern.test(contactPhone)) {
+                                alert('请输入正确的11位手机号码');
+                                document.getElementById('contact_phone').focus();
+                                return false;
+                            }
+                            
+                            return true;
+                        }
+                    </script>
                 </div>
             </div>
         </div>

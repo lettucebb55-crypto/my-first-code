@@ -34,15 +34,15 @@ class Command(BaseCommand):
                 ]
             },
             {
-                'name': '白洋淀度假酒店',
-                'address': '河北省保定市安新县白洋淀景区内',
+                'name': '保定植物园度假酒店',
+                'address': '河北省保定市竞秀区保定植物园附近',
                 'phone': '0312-6666666',
-                'brief': '位于白洋淀景区内的度假酒店，环境优美，是休闲度假的理想选择。',
+                'brief': '位于保定植物园景区内的度假酒店，环境优美，是休闲度假的理想选择。',
                 'description': '''
-                白洋淀度假酒店位于白洋淀景区内，环境优美，空气清新。
-                酒店采用中式建筑风格，与周围自然景观完美融合。
-                客房宽敞舒适，大部分房间可欣赏到湖景或园景。
-                酒店提供丰富的娱乐设施，包括垂钓、游船、篝火晚会等活动。
+                保定植物园度假酒店位于保定植物园景区内，环境优美，空气清新。
+                酒店采用花园度假风格，与周围绿地景观协调融合。
+                客房宽敞舒适，大部分房间可欣赏到园景或花境。
+                酒店提供丰富的休闲设施，包括园林漫步、亲子活动与夜间庭院活动。
                 餐厅提供当地特色美食，让您品尝到正宗的保定风味。
                 ''',
                 'is_recommended': True,
@@ -50,8 +50,8 @@ class Command(BaseCommand):
                 'views_count': random.randint(400, 1500),
                 'display_order': 2,
                 'room_types': [
-                    {'name': '湖景标准间', 'price': 288.00, 'capacity': 2, 'remaining_count': 15, 'description': '可欣赏白洋淀湖景的标准间，环境优美，价格实惠。'},
-                    {'name': '湖景豪华间', 'price': 488.00, 'capacity': 2, 'remaining_count': 10, 'description': '宽敞的湖景豪华间，配备落地窗，可欣赏到美丽的湖光山色。'},
+                    {'name': '园景标准间', 'price': 288.00, 'capacity': 2, 'remaining_count': 15, 'description': '可欣赏保定植物园园景的标准间，环境优美，价格实惠。'},
+                    {'name': '园景豪华间', 'price': 488.00, 'capacity': 2, 'remaining_count': 10, 'description': '宽敞的园景豪华间，配备落地窗，可欣赏到四季花木景观。'},
                     {'name': '家庭套房', 'price': 888.00, 'capacity': 4, 'remaining_count': 5, 'description': '适合家庭入住的套房，配备两间卧室，空间宽敞。'},
                 ]
             },

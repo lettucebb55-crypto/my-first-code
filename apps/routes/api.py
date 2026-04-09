@@ -19,7 +19,7 @@ class RouteDetailView(View):
             "price": "500.00",
             "itineraries": [
                 {"day": 1, "title": "古莲花池 -> 直隶总督署", "description": "..."},
-                {"day": 2, "title": "白洋淀一日游", "description": "..."}
+                {"day": 2, "title": "保定植物园休闲游", "description": "..."}
             ],
             "cost_include": "...",
             "notes": "..."

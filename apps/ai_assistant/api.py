@@ -1,10 +1,13 @@
 import json
+import urllib.error
+import urllib.request
 from django.http import JsonResponse
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
+from django.conf import settings
 from apps.scenic.models import ScenicSpot
 from apps.routes.models import Route
 from .models import AIQuery
@@ -137,6 +140,14 @@ class AIPlanAPIView(View):
         生成旅游规划
         这里使用规则引擎生成基础规划，后续可以替换为真实AI服务
         """
+        # 优先尝试真实AI（DeepSeek），失败时自动回退到规则引擎
+        if getattr(settings, 'USE_AI_API', False):
+            provider = getattr(settings, 'AI_PROVIDER', '').lower()
+            if provider == 'deepseek':
+                ai_result = self._generate_plan_with_deepseek(scenic_spots, query_type, user_input)
+                if ai_result:
+                    return ai_result
+
         result = {
             'route_plan': '',
             'transport_plan': '',
@@ -159,6 +170,107 @@ class AIPlanAPIView(View):
             result['strategy_plan'] = strategy_plan
         
         return result
+
+    def _generate_plan_with_deepseek(self, scenic_spots, query_type, user_input):
+        """
+        使用 DeepSeek 生成规划（HTTP 直连，无第三方依赖）
+        返回 None 表示调用失败，将由上层回退到规则引擎。
+        """
+        api_key = getattr(settings, 'DEEPSEEK_API_KEY', '')
+        base_url = getattr(settings, 'DEEPSEEK_BASE_URL', 'https://api.deepseek.com')
+        model = getattr(settings, 'DEEPSEEK_MODEL', 'deepseek-chat')
+        if not api_key:
+            return None
+
+        scenic_text = json.dumps(scenic_spots, ensure_ascii=False)
+        prompt = f"""
+你是专业旅游规划助手。请根据提供的景点信息和用户需求，输出 JSON（不要输出额外解释）。
+
+query_type: {query_type}
+用户额外需求: {user_input or "无"}
+景点信息(JSON): {scenic_text}
+
+请严格返回如下 JSON 结构（字段必须完整）：
+{{
+  "route_plan": "Markdown文本",
+  "transport_plan": "Markdown文本",
+  "strategy_plan": "Markdown文本"
+}}
+
+规则：
+1) 若 query_type 为 route，仅 route_plan 填内容，其他可填空字符串。
+2) 若 query_type 为 transport，仅 transport_plan 填内容。
+3) 若 query_type 为 strategy，仅 strategy_plan 填内容。
+4) 若 query_type 为 general，三个字段都要有内容。
+5) 内容使用中文，条理清晰，可执行。
+"""
+
+        try:
+            url = f"{base_url.rstrip('/')}/chat/completions"
+            payload = {
+                "model": model,
+                "messages": [
+                    {"role": "system", "content": "你是保定旅游规划专家，擅长输出结构化、可执行的行程方案。"},
+                    {"role": "user", "content": prompt},
+                ],
+                "temperature": 0.6,
+            }
+            req = urllib.request.Request(
+                url=url,
+                data=json.dumps(payload, ensure_ascii=False).encode('utf-8'),
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                },
+                method="POST",
+            )
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                body = resp.read().decode('utf-8', errors='ignore')
+            resp_json = json.loads(body)
+            content = (
+                resp_json.get("choices", [{}])[0]
+                .get("message", {})
+                .get("content", "")
+                .strip()
+            )
+            parsed = self._extract_plan_json(content)
+            if not parsed:
+                return None
+
+            return {
+                'route_plan': parsed.get('route_plan', '') or '',
+                'transport_plan': parsed.get('transport_plan', '') or '',
+                'strategy_plan': parsed.get('strategy_plan', '') or '',
+            }
+        except (urllib.error.URLError, urllib.error.HTTPError, json.JSONDecodeError, KeyError, IndexError, TypeError):
+            return None
+
+    def _extract_plan_json(self, content):
+        """从模型返回中提取 JSON 结构。"""
+        if not content:
+            return None
+        # 优先直接按 JSON 解析
+        try:
+            data = json.loads(content)
+            if isinstance(data, dict):
+                return data
+        except Exception:
+            pass
+
+        # 尝试提取 ```json ... ``` 代码块
+        start = content.find("```json")
+        if start != -1:
+            start = content.find("\n", start)
+            end = content.find("```", start + 1) if start != -1 else -1
+            if start != -1 and end != -1:
+                snippet = content[start + 1:end].strip()
+                try:
+                    data = json.loads(snippet)
+                    if isinstance(data, dict):
+                        return data
+                except Exception:
+                    return None
+        return None
     
     def _generate_route_plan(self, scenic_spots, user_input=''):
         """生成路线规划"""

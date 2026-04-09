@@ -1,79 +1,343 @@
 {% extends "admin_panel/layout.html" %}
 {% block page_title %}数据看板{% endblock %}
-{% block page_header %}管理首页{% endblock %}
+{% block page_header %}保定旅游 · 管理仪表盘{% endblock %}
 {% block menu_dashboard %}active{% endblock %}
 
+{% block extra_css %}
+<style>
+/* 仪表盘深色主题 - 仿游戏开发管理系统 */
+.dashboard-dark {
+    background: linear-gradient(180deg, #0f172a 0%, #1e293b 30%, #1e293b 100%);
+    color: #e2e8f0;
+    min-height: 100vh;
+    padding: 24px;
+}
+.dashboard-dark .page-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 24px;
+}
+/* 当期进度完成情况 - 6个圆形进度 */
+.progress-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    justify-content: flex-start;
+    margin-bottom: 28px;
+}
+.progress-circle-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+.progress-circle {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: conic-gradient(var(--pc-color) calc(var(--pc-pct) * 3.6deg), #334155 0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.progress-circle-inner {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: #1e293b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--pc-color);
+}
+.progress-circle-label {
+    font-size: 13px;
+    color: #94a3b8;
+}
+/* 主内容区：左侧柱状图 + 右侧两列 */
+.dashboard-main {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 24px;
+    margin-bottom: 28px;
+}
+@media (max-width: 1200px) {
+    .dashboard-main { grid-template-columns: 1fr; }
+}
+/* 柱状图区域 */
+.chart-bar-panel {
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid rgba(71, 85, 105, 0.5);
+}
+.chart-bar-panel h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #f1f5f9;
+    margin: 0 0 20px 0;
+}
+.bar-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    height: 220px;
+}
+.bar-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+.bar-fill {
+    width: 100%;
+    min-height: 20px;
+    border-radius: 6px 6px 0 0;
+    background: linear-gradient(180deg, #3b82f6, #60a5fa);
+    transition: height 0.3s ease;
+}
+.bar-label {
+    font-size: 11px;
+    color: #94a3b8;
+    text-align: center;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+/* 排名列表 */
+.rank-panel {
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid rgba(71, 85, 105, 0.5);
+    margin-bottom: 24px;
+}
+.rank-panel h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #f1f5f9;
+    margin: 0 0 18px 0;
+}
+.rank-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px dashed rgba(71, 85, 105, 0.6);
+}
+.rank-row:last-child { border-bottom: none; }
+.rank-num {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    min-width: 36px;
+}
+.rank-name { font-weight: 500; color: #e2e8f0; flex: 1; }
+.rank-type {
+    font-size: 12px;
+    color: #94a3b8;
+    padding: 2px 8px;
+    background: rgba(59, 130, 246, 0.2);
+    border-radius: 6px;
+}
+.rank-score {
+    font-weight: 600;
+    color: #f59e0b;
+}
+.rank-bar {
+    width: 60px;
+    height: 6px;
+    background: #334155;
+    border-radius: 3px;
+    overflow: hidden;
+}
+.rank-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    border-radius: 3px;
+}
+/* 散点图区域 */
+.scatter-panel {
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid rgba(71, 85, 105, 0.5);
+}
+.scatter-panel h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #f1f5f9;
+    margin: 0 0 18px 0;
+}
+.scatter-legend {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+    font-size: 12px;
+    color: #94a3b8;
+}
+.scatter-legend span::before {
+    content: '';
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+.scatter-legend .self::before { background: #ef4444; }
+.scatter-legend .others::before { background: #3b82f6; }
+.scatter-canvas { height: 200px; }
+/* 底部KPI */
+.kpi-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 24px;
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 16px;
+    border: 1px solid rgba(71, 85, 105, 0.5);
+}
+.kpi-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.kpi-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #60a5fa;
+}
+.kpi-label {
+    font-size: 13px;
+    color: #94a3b8;
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="page-header">
-    <div>
-        <h1>数据概览</h1>
-        <p>
-            今日新增订单 <strong>{{ today_orders }}</strong> 单 · 累计营收
-            <strong>¥{{ total_revenue|floatformat:2 }}</strong>
-        </p>
+<div class="dashboard-dark">
+    <h1 class="page-title">保定旅游 · 管理仪表盘</h1>
+
+    <!-- 1. 当期各模块数据覆盖情况 -->
+    <div class="progress-row">
+        {% for m in module_progress %}
+        <div class="progress-circle-wrap">
+            <div class="progress-circle" style="--pc-color: {{ m.color }}; --pc-pct: {{ m.pct }};">
+                <div class="progress-circle-inner" style="color: {{ m.color }};">{{ m.pct }}%</div>
+            </div>
+            <span class="progress-circle-label">{{ m.name }}</span>
+        </div>
+        {% endfor %}
     </div>
-    <div class="page-header-actions">
-        <!-- Django 后台已关闭 -->
+
+    <!-- 2. 主内容：柱状图 + 右侧排名/散点 -->
+    <div class="dashboard-main">
+        <div class="chart-bar-panel">
+            <h3>各项目预订量</h3>
+            <div class="bar-chart">
+                {% for b in business_bars %}
+                <div class="bar-item">
+                    <div class="bar-fill" style="height: {{ b.pct }}%;"></div>
+                    <span class="bar-label">{{ b.label }}</span>
+                </div>
+                {% empty %}
+                <div class="empty-state" style="color:#94a3b8;">暂无数据</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div>
+            <div class="rank-panel">
+                <h3>景点综合排名</h3>
+                {% for r in ranking_list %}
+                <div class="rank-row">
+                    <span class="rank-num">{{ r.rank|stringformat:"02d" }}th</span>
+                    <span class="rank-name">{{ r.name }}</span>
+                    <span class="rank-type">{{ r.type }}</span>
+                    <span class="rank-score">{{ r.score }}</span>
+                    <div class="rank-bar"><div class="rank-bar-fill" style="width:{{ r.score }}%;"></div></div>
+                </div>
+                {% empty %}
+                <div class="empty-state" style="color:#94a3b8;">暂无数据</div>
+                {% endfor %}
+            </div>
+
+            <div class="scatter-panel">
+                <h3>景点评分与订单分布</h3>
+                <div class="scatter-legend">
+                    <span class="others">其他景点</span>
+                    <span class="self">高评分</span>
+                </div>
+                <div class="scatter-canvas">
+                    <canvas id="scatterChart" width="340" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 底部KPI -->
+    <div class="kpi-row">
+        {% for k in bottom_kpis %}
+        <div class="kpi-item">
+            <span class="kpi-value">{{ k.value }}{{ k.unit }}</span>
+            <span class="kpi-label">{{ k.label }}</span>
+        </div>
+        {% endfor %}
     </div>
 </div>
 
-<div class="stat-grid">
-    <div class="stat-card">
-        <div class="stat-card-icon">
-            <i class="fas fa-users"></i>
-        </div>
-        <div class="stat-card-title">总用户数</div>
-        <div class="stat-card-value">{{ total_users|default:"0" }}</div>
-        <div class="stat-card-footer">含管理员与普通用户</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-card-icon">
-            <i class="fas fa-file-invoice-dollar"></i>
-        </div>
-        <div class="stat-card-title">订单总量</div>
-        <div class="stat-card-value">{{ total_orders|default:"0" }}</div>
-        <div class="stat-card-footer">待支付 {{ pending_orders|default:"0" }} 单</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-card-icon">
-            <i class="fas fa-mountain"></i>
-        </div>
-        <div class="stat-card-title">景点数量</div>
-        <div class="stat-card-value">{{ total_scenic|default:"0" }}</div>
-        <div class="stat-card-footer">热门景点持续更新中</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-card-icon">
-            <i class="fas fa-route"></i>
-        </div>
-        <div class="stat-card-title">路线数量</div>
-        <div class="stat-card-value">{{ total_routes|default:"0" }}</div>
-        <div class="stat-card-footer">覆盖酒店 {{ total_hotels|default:"0" }} 家</div>
-    </div>
-</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{{ scatter_data|json_script:"scatter-data" }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const el = document.getElementById('scatter-data');
+    const scatterData = el ? JSON.parse(el.textContent || '[]') : [];
+    const ctx = document.getElementById('scatterChart');
+    if (ctx && scatterData.length > 0) {
+        const xs = scatterData.map(d => d.x);
+        const ys = scatterData.map(d => d.y);
+        const xMax = Math.max(...xs, 1);
+        const yMax = Math.max(...ys, 1);
+        const yMin = Math.min(...ys, 0);
 
-<div class="two-column">
-    <div class="rank-list">
-        <h3>热门景点 TOP5</h3>
-        {% for spot in top_spots %}
-        <div class="rank-item">
-            <strong>{{ forloop.counter }}. {{ spot.item_name }}</strong>
-            <span>{{ spot.order_count }} 笔订单</span>
-        </div>
-        {% empty %}
-        <div class="empty-state">暂无数据</div>
-        {% endfor %}
-    </div>
-    <div class="rank-list">
-        <h3>热门路线 TOP5</h3>
-        {% for route in top_routes %}
-        <div class="rank-item">
-            <strong>{{ forloop.counter }}. {{ route.item_name }}</strong>
-            <span>{{ route.order_count }} 笔订单</span>
-        </div>
-        {% empty %}
-        <div class="empty-state">暂无数据</div>
-        {% endfor %}
-    </div>
-</div>
+        new Chart(ctx, {
+            type: 'scatter',
+            data: {
+                datasets: [
+                    {
+                        label: '景点',
+                        data: scatterData.map((d, i) => ({ x: d.x, y: d.y })),
+                        backgroundColor: xs.map((x, i) => i === 0 ? 'rgba(239,68,68,0.8)' : 'rgba(59,130,246,0.7)'),
+                        pointRadius: 6,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: {
+                        title: { display: true, text: '订单数', color: '#94a3b8' },
+                        grid: { color: 'rgba(71,85,105,0.4)' },
+                        ticks: { color: '#94a3b8' }
+                    },
+                    y: {
+                        title: { display: true, text: '评分', color: '#94a3b8' },
+                        min: Math.max(0, yMin - 0.5),
+                        max: yMax + 0.5,
+                        grid: { color: 'rgba(71,85,105,0.4)' },
+                        ticks: { color: '#94a3b8' }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

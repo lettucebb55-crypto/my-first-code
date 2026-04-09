@@ -2,6 +2,7 @@
 Django settings for baoding_tourism project.
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -151,9 +152,15 @@ LOGOUT_ON_GET = True
 
 # AI助手配置
 # 是否使用真实AI API（False时使用规则引擎）
-USE_AI_API = False
-# AI服务提供商：'openai', 'qianfan', 'dashscope'
-AI_PROVIDER = 'openai'
-# OpenAI配置（如果使用OpenAI）
-OPENAI_API_KEY = ''  # 从环境变量读取：os.getenv('OPENAI_API_KEY', '')
-OPENAI_MODEL = 'gpt-3.5-turbo'  # 或 'gpt-4'
+USE_AI_API = os.getenv('USE_AI_API', 'True').lower() == 'true'
+# AI服务提供商：'deepseek', 'openai', 'qianfan', 'dashscope'
+AI_PROVIDER = os.getenv('AI_PROVIDER', 'deepseek').lower()
+
+# DeepSeek 配置（推荐）
+DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY', '')
+DEEPSEEK_BASE_URL = os.getenv('DEEPSEEK_BASE_URL', 'https://api.deepseek.com')
+DEEPSEEK_MODEL = os.getenv('DEEPSEEK_MODEL', 'deepseek-chat')
+
+# OpenAI配置（兼容保留）
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
+OPENAI_MODEL = os.getenv('OPENAI_MODEL', 'gpt-3.5-turbo')

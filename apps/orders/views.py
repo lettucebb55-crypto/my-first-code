@@ -43,14 +43,19 @@ class OrderConfirmView(LoginRequiredMixin, TemplateView):
         check_out_date = self.request.GET.get('check_out_date', '')
         room_type_id = self.request.GET.get('room_type_id')
         
-        # 验证必填参数
-        missing_params = []
-        if not contact_name:
-            missing_params.append('联系人姓名')
-        if not contact_phone:
-            missing_params.append('联系人手机')
+        # 如果URL中没有联系人信息，尝试从当前登录用户获取
+        if not contact_name and self.request.user.is_authenticated:
+            # 优先使用 first_name，如果没有则使用 username
+            contact_name = self.request.user.first_name or self.request.user.username
+        if not contact_phone and self.request.user.is_authenticated:
+            # 从用户模型获取手机号
+            contact_phone = getattr(self.request.user, 'phone', '')
         
-        # 根据项目类型验证特定参数
+        # 验证必填参数
+        # 注意：联系人信息如果缺少，允许在订单确认页面填写，不在这里报错
+        missing_params = []
+        
+        # 根据项目类型验证特定参数（这些参数必须从URL获取）
         if item_type == 'hotel':
             if not check_in_date:
                 missing_params.append('入住日期')
@@ -60,9 +65,13 @@ class OrderConfirmView(LoginRequiredMixin, TemplateView):
             if not booking_date:
                 missing_params.append('出行日期')
         
+        # 只有项目类型相关的参数缺失时才报错
         if missing_params:
             context['error'] = f'缺少必要参数：{", ".join(missing_params)}'
             return context
+        
+        # 标记是否需要填写联系人信息（用于在模板中显示表单）
+        context['need_contact_info'] = not contact_name or not contact_phone
         
         context['item_id'] = item_id
         context['item_type'] = item_type
@@ -387,16 +396,47 @@ class OrderCreateView(LoginRequiredMixin, View):
         item_id = request.POST.get('item_id')
         item_type = request.POST.get('item_type')
         quantity = int(request.POST.get('quantity', 1))
-        contact_name = request.POST.get('contact_name', '')
-        contact_phone = request.POST.get('contact_phone', '')
+        contact_name = request.POST.get('contact_name', '').strip()
+        contact_phone = request.POST.get('contact_phone', '').strip()
+        check_in_date = request.POST.get('check_in_date', '')
+        check_out_date = request.POST.get('check_out_date', '')
+        room_type_id = request.POST.get('room_type_id')
+        booking_date = request.POST.get('booking_date', '')
+        
+        # 验证必填参数
+        if not all([item_id, item_type, contact_name, contact_phone]):
+            return JsonResponse({'status': 'error', 'message': '参数不完整，请填写所有必填信息'})
+        
+        # 酒店预订必须提供入住和退房日期
+        if item_type == 'hotel':
+            if not check_in_date or not check_out_date:
+                return JsonResponse({'status': 'error', 'message': '请选择入住和退房日期'})
         
         payment_view = OrderPaymentView()
-        order = payment_view.create_order(request.user, item_id, item_type, quantity, contact_name, contact_phone)
-        
-        if order:
-            return HttpResponseRedirect(f'/orders/payment/{order.order_sn}/')
-        else:
-            return JsonResponse({'status': 'error', 'message': '订单创建失败'})
+        try:
+            order = payment_view.create_order(
+                request.user, 
+                item_id, 
+                item_type, 
+                quantity, 
+                contact_name, 
+                contact_phone,
+                check_in_date=check_in_date if item_type == 'hotel' else None,
+                check_out_date=check_out_date if item_type == 'hotel' else None,
+                room_type_id=room_type_id if item_type == 'hotel' else None
+            )
+            
+            if order:
+                return HttpResponseRedirect(f'/orders/payment/{order.order_sn}/')
+            else:
+                return JsonResponse({'status': 'error', 'message': '订单创建失败'})
+        except ValueError as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"创建订单失败: {e}", exc_info=True)
+            return JsonResponse({'status': 'error', 'message': '订单创建失败，请稍后重试'})
 
 
 class OrderDetailView(LoginRequiredMixin, TemplateView):

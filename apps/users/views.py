@@ -179,26 +179,13 @@ class LoginView(DjangoLoginView):
     redirect_authenticated_user = True  # 如果已登录，重定向到首页
     
     def form_valid(self, form):
-        """处理登录表单验证成功"""
-        # 先获取用户（在登录之前）
-        username = form.cleaned_data.get('username')
-        password = form.cleaned_data.get('password')
-        user = authenticate(self.request, username=username, password=password)
-        
-        if user is not None:
-            # 登录用户
-            login(self.request, user)
-            
-            # 如果用户是管理员（staff或superuser），重定向到管理员后台
-            if user.is_staff or user.is_superuser:
-                from django.http import HttpResponseRedirect
-                # next 可来自 GET 或 POST（隐藏域）
-                next_url = self.request.GET.get('next') or self.request.POST.get('next')
-                if next_url:
-                    return HttpResponseRedirect(next_url)
-                return HttpResponseRedirect('/admin_panel/')
-        
-        # 调用父类方法处理重定向（普通用户）
+        """
+        处理登录表单验证成功
+        说明：不再对管理员账号做“强制跳转后台”的特殊处理，
+        所有用户（包括管理员）都按照通用逻辑：
+        - 如果 URL 中有 next 参数，则跳转到 next
+        - 否则走 get_success_url（默认首页）
+        """
         return super().form_valid(form)
     
     def get_success_url(self):

@@ -26,10 +26,10 @@ class Command(BaseCommand):
             }
         )
         category3, created = FoodCategory.objects.get_or_create(
-            name='水乡美食',
+            name='园林轻食',
             defaults={
-                'description': '白洋淀等水乡地区的特色美食',
-                'icon': 'fa-fish',
+                'description': '保定植物园周边适合休闲游的健康轻食',
+                'icon': 'fa-leaf',
                 'display_order': 3
             }
         )
@@ -75,33 +75,29 @@ class Command(BaseCommand):
                 'display_order': 1,
             },
             {
-                'name': '白洋淀全鱼宴',
-                'english_name': 'Baiyangdian Fish Banquet',
+                'name': '植物园槐花饼',
+                'english_name': 'Botanical Garden Sophora Flower Cake',
                 'category': category3,
-                'description': '''白洋淀全鱼宴是白洋淀地区的特色美食，以新鲜的湖鱼为原料，采用多种烹饪方式制作而成。
-全鱼宴包括鱼头、鱼身、鱼尾等不同部位的多种做法，如清蒸、红烧、糖醋、酸菜鱼等。
-
-白洋淀水质优良，出产的鱼类肉质鲜嫩，营养丰富。全鱼宴不仅展现了当地渔民的烹饪技艺，更是对白洋淀丰富水产资源的充分利用。''',
-                'ingredients': '白洋淀湖鱼（草鱼、鲤鱼、鲢鱼等）、豆腐、粉条、酸菜、辣椒、葱、姜、蒜、料酒、酱油等',
-                'cooking_method': '''1. 选用新鲜的白洋淀湖鱼，处理干净
-2. 根据不同做法准备配料：清蒸需葱姜丝，红烧需糖色，酸菜鱼需酸菜和辣椒
-3. 清蒸鱼：鱼身划花刀，加调料蒸制15-20分钟
-4. 红烧鱼：先煎至两面金黄，再加调料炖煮
-5. 酸菜鱼：鱼肉片薄片，与酸菜同煮，麻辣鲜香
-6. 搭配豆腐、粉条等配菜，丰富口感''',
-                'cultural_background': '''白洋淀是华北地区最大的淡水湖，水产资源丰富。当地渔民世代以捕鱼为生，对鱼的烹饪有着独特的技艺。
-
-全鱼宴是白洋淀地区的传统宴席，体现了当地人对水资源的珍视和对美食的追求。每逢重要节日或招待客人，当地人都会准备丰盛的全鱼宴，表达对客人的热情欢迎。''',
-                'price_range': '200-500元/桌',
-                'average_price': 350.00,
+                'description': '''植物园槐花饼是适合春季游园的时令小吃，以新鲜槐花和面粉为主料，口感清香软糯。
+成品外层微酥、内里松软，甜咸两种口味都很受欢迎，适合边逛边吃。''',
+                'ingredients': '新鲜槐花、面粉、鸡蛋、白糖（或少量盐）、食用油等',
+                'cooking_method': '''1. 将槐花清洗干净，控干水分
+2. 与面粉、鸡蛋和调味料混合成面糊
+3. 平底锅少油加热，倒入面糊摊成小饼
+4. 小火两面煎至金黄即可出锅
+5. 可搭配蜂蜜或酸奶食用''',
+                'cultural_background': '''保定春季槐花资源丰富，民间有制作槐花饼、槐花蒸菜的饮食传统。
+将时令食材与游客休闲场景结合，形成了植物园周边独具特色的季节美食。''',
+                'price_range': '12-28元/份',
+                'average_price': 18.00,
                 'is_hot': True,
                 'is_recommended': True,
                 'is_traditional': True,
                 'rating': 4.8,
-                'tags': '水乡,鱼类,宴席,特色菜',
-                'recommended_restaurants': '''白洋淀景区内餐厅
-安新县渔家乐
-白洋淀度假酒店餐厅''',
+                'tags': '时令,小吃,园林,春季',
+                'recommended_restaurants': '''保定植物园游客服务中心餐厅
+植物园东门小吃店
+竞秀区本地家常菜馆''',
                 'display_order': 2,
             },
             {
@@ -196,6 +192,32 @@ class Command(BaseCommand):
 传统肉制品专营店
 古城美食街''',
                 'display_order': 5,
+            },
+            {
+                'name': '保定牛肉罩饼',
+                'english_name': 'Baoding Beef Soup with Flatbread',
+                'category': category2,
+                'description': '''保定牛肉罩饼是当地经典的汤食，热汤浇在薄饼上，搭配牛肉片和葱香，口感鲜香醇厚。
+这道美食分量足、上桌快，适合作为正餐，也是很多本地人从小吃到大的家常味道。''',
+                'ingredients': '牛肉、牛骨汤、烙饼、葱花、香菜、盐、胡椒粉等',
+                'cooking_method': '''1. 牛骨与牛肉长时间熬汤，得到浓香高汤
+2. 烙制薄饼并切成小块垫入碗底
+3. 牛肉切片后与高汤一起加热
+4. 将滚烫牛肉汤浇在饼上
+5. 撒葱花香菜，按口味加胡椒即可''',
+                'cultural_background': '''罩饼类汤食在华北地区历史悠久，保定版本讲究“汤清味厚、饼软不烂”。
+它兼具北方面食和牛肉汤的特色，是保定地方饮食文化的重要代表之一。''',
+                'price_range': '18-38元/碗',
+                'average_price': 26.00,
+                'is_hot': True,
+                'is_recommended': True,
+                'is_traditional': True,
+                'rating': 4.7,
+                'tags': '传统,汤食,牛肉,主食',
+                'recommended_restaurants': '''保定老城罩饼馆
+莲池区本地牛肉馆
+火车站周边老字号小馆''',
+                'display_order': 6,
             },
         ]
         

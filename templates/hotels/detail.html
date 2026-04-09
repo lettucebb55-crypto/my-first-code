@@ -312,6 +312,36 @@
                         <input type="hidden" name="item_id" value="{{ hotel.id }}">
                         <input type="hidden" name="item_type" value="hotel">
                         <input type="hidden" name="room_type_id" id="room_type_id" value="{% if room_types %}{{ room_types.0.id }}{% endif %}">
+                        
+                        <!-- 联系人信息（提前在此页填写，会自动带到确认订单页） -->
+                        <div class="mb-3">
+                            <label for="contact_name" class="form-label fw-bold">联系人姓名 <span class="text-danger">*</span></label>
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="contact_name"
+                                name="contact_name"
+                                value="{% if user.is_authenticated %}{{ user.first_name|default:user.username }}{% endif %}"
+                                placeholder="请输入联系人姓名"
+                                required
+                            >
+                        </div>
+                        <div class="mb-3">
+                            <label for="contact_phone" class="form-label fw-bold">联系人手机号 <span class="text-danger">*</span></label>
+                            <input
+                                type="tel"
+                                class="form-control"
+                                id="contact_phone"
+                                name="contact_phone"
+                                value="{% if user.is_authenticated %}{{ user.phone|default:'' }}{% endif %}"
+                                placeholder="请输入11位手机号"
+                                pattern="[0-9]{11}"
+                                maxlength="11"
+                                required
+                            >
+                            <small class="form-text text-muted">请输入11位手机号码</small>
+                        </div>
+
                         <div class="mb-3">
                             <label for="check_in_date" class="form-label fw-bold">入住日期 <span class="text-danger">*</span></label>
                             <input type="date" class="form-control" id="check_in_date" name="check_in_date" required>
